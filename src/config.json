@@ -1,0 +1,10 @@
+{
+    "mysql_host": "chiquis.duckdns.org",
+    "mysql_user": "alanr",
+    "mysql_password": "password",
+    "mysql_database": "alexa_reader",
+    "mysql_port": 3306,
+    "chromium_path": "../chromium/chrome",
+    "crawler_js_dump_path":  "../JSOutput",
+    "crawler_screenshot_path":  "../Screenshots"
+}
