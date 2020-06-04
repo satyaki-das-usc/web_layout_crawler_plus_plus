@@ -6,7 +6,9 @@ import {
     stat as _stat,
     rmdir as _rmdir
 } from 'fs';
+const os = require("os");
 import mv from 'mv';
+import {makeChromeProfile, makeFirefoxProfileWithWebAssemblyDisabled, makeFirefoxProfileWithWebAssemblyEnabled} from './CommonUtilities';
 import {
     promisify
 } from 'util';
@@ -23,9 +25,8 @@ import fse from 'fs-extra'; // v 5.0.0
 import sanitize from "sanitize-filename";
 import {MySQLConnector} from './MySQLConnector';
 const PROD = process.env.NODE_ENV === 'production' ? true : false;
-import playwright, { Browser, JSHandle, LaunchOptions, Page, BrowserType } from 'playwright';
+import playwright, { Browser, JSHandle, Page, BrowserType, LaunchOptions, BrowserContext } from 'playwright';
 const { chromium, firefox } = playwright;
-
 
 import {
     join,
@@ -38,7 +39,9 @@ import {Queue, QueueJob} from './Queue';
 import uuidv1 from 'uuidv1';
 import {
     crawler_js_dump_path,
-    crawler_screenshot_path
+    crawler_screenshot_path,
+    max_crawl_depth_level,
+    time_to_wait_on_page
 } from './config.json';
 enum SubURLScanMode {
     FULL = 'full',
@@ -46,8 +49,9 @@ enum SubURLScanMode {
     FIRST_N_PERCENT = 'first_n_percent'
 }
 const SUBPAGE_PERCENTAGE_TO_VISIT: number = (process.env.SUBPAGE_PERCENTAGE_TO_VISIT != null) ? parseFloat(process.env.SUBPAGE_PERCENTAGE_TO_VISIT) : 0.25;
-const MAX_DEPTH_LEVEL = (process.env.MAX_DEPTH_LEVEL != null) ? parseInt(process.env.MAX_DEPTH_LEVEL) : 1;
-const TIME_TO_WAIT: number = (process.env.TIME_TO_WAIT != null) ? parseFloat(process.env.TIME_TO_WAIT) : 5;
+const MAX_CRAWL_DEPTH_LEVEL = (process.env.MAX__CRAWL_DEPTH_LEVEL != null) ? parseInt(process.env.MAX__CRAWL_DEPTH_LEVEL) : max_crawl_depth_level;
+const HEADLESS_BROWSER = false;
+const TIME_TO_WAIT: number = (process.env.TIME_TO_WAIT != null) ? parseFloat(process.env.TIME_TO_WAIT) : time_to_wait_on_page;
 let SUBURL_SCAN_MODE: SubURLScanMode;
 if(process.env.SUBURL_SCAN_MODE == null || process.env.SUBURL_SCAN_MODE.toLowerCase() == 'full'){
     SUBURL_SCAN_MODE = SubURLScanMode.FULL;
@@ -115,10 +119,10 @@ declare interface WebSocketLogs {
 export class Crawler {
     capturedRequests: Map<string,string[]>;
     capturedWebSocketRequests: Map<string,WebSocketLogs>;
-    browser: Browser | null;
+    browser: BrowserContext | null;
     database: MySQLConnector;
     pagesToVisit = new Queue<QueueJob> ();
-    userDataDir: string;
+    userDataDir: string = uuidv1();
     launchOptions: any;
     domain: string;
     finalDomainOutputPath: string = '';
@@ -132,41 +136,37 @@ export class Crawler {
     useFirefox = false;
     pagesWithWebAssembly: Set<string> = new Set()
 
-    constructor(databaseConnector: MySQLConnector, domain: string, userDataDir: string) {
+    constructor(databaseConnector: MySQLConnector, domain: string) {
         this.capturedRequests = new Map();
         this.capturedWebSocketRequests = new Map();
         this.browser = null;
         this.database = databaseConnector;
-        this.userDataDir = PROD ? userDataDir : 'DevProfile';
         this.domain = domain;
         this.scannedSubPages = new Set<string>();
     }
 
-    setLaunchOptions(useFirefox=true,disableWebAssembly=false){
-
+    setLaunchOptions(browser: string,disableWebAssembly=false){
+        const useFirefox= browser === 'firefox';
         this.WebAssemblyEnabled = !disableWebAssembly;
         const domainName = this.cleanDomain(this.domain);
         const WebAssemblyEnabledSubDirectoryName = this.WebAssemblyEnabled ? 'WebAssembly_Enabled' : 'WebAssembly_Disabled';
         this.useFirefox = useFirefox;
-        const jsOutputDir = _resolve(JS_OUTPUT_PATH,WebAssemblyEnabledSubDirectoryName, domainName);
+        const UsingFirefoxSubDirectoryName = this.useFirefox ? 'Firefox' : 'Chrome';
+        const jsOutputDir = _resolve(JS_OUTPUT_PATH, domainName,UsingFirefoxSubDirectoryName,WebAssemblyEnabledSubDirectoryName);
         this.finalDomainOutputPath = jsOutputDir;
-        
-        
-        const screenshotDir = _resolve(SCREENSHOT_OUTPUT_PATH,WebAssemblyEnabledSubDirectoryName, domainName);
+        const screenshotDir = _resolve(SCREENSHOT_OUTPUT_PATH, domainName,UsingFirefoxSubDirectoryName,WebAssemblyEnabledSubDirectoryName);
         this.screenshotOutputPath = screenshotDir;
 
-        const launchOptions: LaunchOptions = {
-            // userDataDir: this.userDataDir,
-            // executablePath: "C:\\Program Files\\Firefox Nightly\\firefox.exe",
-            // args: disableWebAssembly ? ['--js-flags=--noexpose_wasm'] : undefined,
-            // args: ['--disable-setuid-sandbox', '--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage', `--js-flags=--dump-wasm-module-path=${MODULE_DUMP_PATH}`],
-            // ignoreDefaultArgs: ['--disable-extensions'],
-            devtools: true,
-            // dumpio: false,//!PROD,
-            headless: false
-        };
-
-        this.launchOptions = launchOptions;
+        if(useFirefox){
+            if(!this.WebAssemblyEnabled){
+                this.userDataDir = makeFirefoxProfileWithWebAssemblyDisabled();
+            }
+            else {
+                this.userDataDir = makeFirefoxProfileWithWebAssemblyEnabled();
+            }
+        } else {
+            this.userDataDir = makeChromeProfile();
+        }
     }
 
     async getFiles(dir: string): Promise<string[]> {
@@ -179,6 +179,8 @@ export class Crawler {
         );
         return files.reduce((a, f) => a.concat(f), []);
     }
+
+    
 
     async cleanDomainDir() {
         try {
@@ -211,15 +213,15 @@ export class Crawler {
     async insertInstantiateIntoDatabase(currentURL:string, domain: string, stackJson: InstrumentationRecords, parent?:string) {
         let sqlParams = [];
         let capturedRequests = JSON.stringify(this.capturedRequests.get(currentURL));
-        let capturedWebSocketRequests = JSON.stringify(this.capturedWebSocketRequests.get(currentURL));
+        
         const baseQuery = `
-            INSERT INTO found_instantiate
-            (URL, Domain, StackTraceJSON, CapturedRequests,CapturedWebSockets,ParentPage,ScanMode) 
-            VALUES(?,?,?,?,?,?,?);
+            INSERT INTO found_page
+            (URL, Domain, StackTraceJSON, CapturedRequests,ParentPage) 
+            VALUES(?,?,?,?,?);
         `
 
         sqlParams.push(currentURL, domain, JSON.stringify(stackJson), capturedRequests,
-            capturedWebSocketRequests, parent ?? null, SUBURL_SCAN_MODE);
+             parent ?? null);
         try {
             await this.database.query(baseQuery, sqlParams);
         } catch (sqlErr) {
@@ -256,7 +258,9 @@ export class Crawler {
             const browser = await this.getBrowser()
             try{
                 page = await browser.newPage();
-                await page.evaluate(preloadFile)
+                if(this.WebAssemblyEnabled){
+                    await page.addInitScript(preloadFile)
+                }
 
             } catch(newPageError){
                 console.error('New Page Error:', newPageError);
@@ -266,46 +270,39 @@ export class Crawler {
             if(page == null){
                 throw new Error('Cannot open newpage');
             }
-
-            await page.setViewportSize({
-                width: 1920,
-                height: 1080
-            });
-            page.on('worker', async worker => {
-                // console.log('Worker created: ' + worker.url())
-                try {
-                    await worker.evaluate(preloadFile)
-                    await worker.evaluate(() => {
-                        setTimeout(() => {
-                            console.log(self);
-                        }, 1000)
-                    })
-                    const currentWorkerWebAssembly: JSHandle<WebAssemblyInstrumentation> = await worker.evaluateHandle(() => {
-                        return self.WebAssemblyCallsFound;
-                    })
-                    this.webAssemblyWorkers.push(currentWorkerWebAssembly);
-                } catch (err) {
-                    console.error('Worker Eval', err)
-                }
-            });
-            // await page.setRequestInterception(true);
-            // page.on('request', (interceptedRequest) => {
-            //     let requestType = interceptedRequest.resourceType();
-            //     let requestURL = interceptedRequest.url()
-            //     const currentURL = this.currentJob?.url;
-            //     if(currentURL != null){
-            //             if (!this.capturedRequests.get(currentURL)) {
-            //                 this.capturedRequests.set(currentURL,[]);
-            //             }
-            //             this.capturedRequests.get(currentURL)?.push(requestURL);
-            //     }
-            //     interceptedRequest.continue();
+            // await page.setViewportSize({
+            //     width: 600,//1920,
+            //     height: 800//1080
             // });
+            await page.setViewportSize({
+                width: 640,
+                height: 480,
+              });
+            
+              if(this.WebAssemblyEnabled){
+                page.on('worker', async worker => {
+                    // console.log('Worker created: ' + worker.url())
+                    try {
+                        await worker.evaluate(preloadFile)
+                        await worker.evaluate(() => {
+                            setTimeout(() => {
+                                console.log(self);
+                            }, 1000)
+                        })
+                        const currentWorkerWebAssembly: JSHandle<WebAssemblyInstrumentation> = await worker.evaluateHandle(() => {
+                            return self.WebAssemblyCallsFound;
+                        })
+                        this.webAssemblyWorkers.push(currentWorkerWebAssembly);
+                    } catch (err) {
+                        console.error('Worker Eval', err)
+                    }
+                });
+              }
+
             let currentBase64Index = 0;
             page.on('response', async (response) => {
                 const responseStatus = response.status();
                 if (responseStatus === 200) {
-                    const requestType = response.request().resourceType();
                     const responseURL = response.url();
                     const currentURL = this.currentJob?.url;
                     if(currentURL != null){
@@ -324,19 +321,18 @@ export class Crawler {
 
                     } else {
                         filePath = this.sanitizeURLForFileSystem(responseURL, this.finalDomainOutputPath); 
-                        
                     }
                     try{
                         const responseBody = await response.body()
-                        await fse.outputFile(filePath,responseBody );
+                        await fse.outputFile(filePath,responseBody);
                     }catch(saveResponseError){
-                        console.error(`Save response error for ${responseURL}`, saveResponseError);
+                        // console.error(`Save response error for ${responseURL}`);
                     }
                    
                 }
             });
 
-            page.setDefaultNavigationTimeout((TIME_TO_WAIT * 2) * 1000)
+            // page.setDefaultNavigationTimeout((TIME_TO_WAIT * 2) * 1000)
             return page;
     }
 
@@ -353,56 +349,68 @@ export class Crawler {
         }
     }
 
-    async scanPages() {
-        this.setLaunchOptions(false);
+    async scanPages(browser: string) {
+        this.setLaunchOptions(browser, false);
         await this.setup();
-        const firstJob = new QueueJob(this.domain, this.domain, 0);
-        this.pagesToVisit.enqueue(firstJob);
 
-        while (!this.pagesToVisit.isEmpty()){
-            const currentJob = this.pagesToVisit.dequeue();
-            if (currentJob != null) {
-                this.currentJob = currentJob
-                const currentURL = currentJob.url;
-                if(this.scannedSubPages.has(currentURL)){
-                    continue;
-                } else {
-                    this.scannedSubPages.add(currentURL);
-                }
+        if(this.pagesWithWebAssembly.size > 0){
+            for(const url of this.pagesWithWebAssembly){
+                const job = new QueueJob(url, this.domain, 0);
                 this.capturedRequests.clear();
                 this.capturedWebSocketRequests.clear();
-                try {
-                    const scanResults = await (await this.scanPage(currentJob));
-                    this.containsWebAssembly = this.containsWebAssembly || scanResults.containsWebAssembly;
-                    if(scanResults.containsWebAssembly){
-                        this.pagesWithWebAssembly.add(currentURL);
-                    }
-                } catch (e) {
-                    console.error('Scan Pages:', e);
-                    await this.wait(5);
+                try{
+                    const scanResults = await (await this.scanPage(job));
+                } catch(e){
                     continue;
                 }
 
-                //check how many open pages
-                try{
-                    const browserPagesOpen = this.browser?.contexts();
-                    if(browserPagesOpen != null){
-                        if(browserPagesOpen.length > 3){
-                            for(const page of browserPagesOpen){
-                                await page.close();
+            }
+        } else {
+            const firstJob = new QueueJob(this.domain, this.domain, 0);
+            this.pagesToVisit.enqueue(firstJob);
+    
+            while (!this.pagesToVisit.isEmpty()){
+                const currentJob = this.pagesToVisit.dequeue();
+                if (currentJob != null) {
+                    this.currentJob = currentJob
+                    const currentURL = currentJob.url;
+                    if(this.scannedSubPages.has(currentURL)){
+                        continue;
+                    } else {
+                        this.scannedSubPages.add(currentURL);
+                    }
+                    this.capturedRequests.clear();
+                    this.capturedWebSocketRequests.clear();
+                    try {
+                        const scanResults = await (await this.scanPage(currentJob));
+                        this.containsWebAssembly = this.containsWebAssembly || scanResults.containsWebAssembly;
+                        if(scanResults.containsWebAssembly){
+                            this.pagesWithWebAssembly.add(currentURL);
+                        }
+                    } catch (e) {
+                        console.error('Scan Pages:', e);
+                        await this.wait(5);
+                        continue;
+                    }
+    
+                    //check how many open pages
+                    try{
+                        const browserPagesOpen = this.browser?.pages();
+                        if(browserPagesOpen != null){
+                            if(browserPagesOpen.length > 3){
+                                for(const page of browserPagesOpen){
+                                    await page.close();
+                                }
                             }
                         }
+                    } catch(browserPagesCloseErr){
+                        console.error('Browser page close error', browserPagesCloseErr);
                     }
-                } catch(browserPagesCloseErr){
-                    console.error('Browser page close error', browserPagesCloseErr);
-                    // this.database.close();
-                    // process.exit(-1);
+    
                 }
-
-            // console.log('Captured Requests:', this.capturedRequests)
-            // console.log('Captured WebSockets:', this.capturedWebSocketRequests)
             }
         }
+
 
         if(!this.containsWebAssembly){
             await this.cleanDomainDir();
@@ -423,7 +431,7 @@ export class Crawler {
     
     isValidURL(url: string, depth: number): boolean {
         //check url formatting
-        if (depth < MAX_DEPTH_LEVEL) {
+        if (depth < MAX_CRAWL_DEPTH_LEVEL) {
             if (url != null && 
                 typeof (url) === 'string' &&
                 url != '' &&
@@ -561,22 +569,27 @@ export class Crawler {
     async scrollToBottom (page: Page) {
         const distance = 100; // should be less than or equal to window.innerHeight
         const delay = 100;
-            //  @ts-ignore
+        let currentScroll = 0;
+        //  @ts-ignore
         while (await page.evaluate(() => document.scrollingElement.scrollTop + window.innerHeight < document.scrollingElement.scrollHeight)) {
             //  @ts-ignore
-        await page.evaluate((y) => { document.scrollingElement.scrollBy(0, y); }, distance);
-        await page.waitForTimeout(delay);
+            await page.evaluate((y) => { document.scrollingElement.scrollBy(0, y); }, distance);
+            await page.waitForTimeout(delay);
+            currentScroll += 1;
         }
     }
 
     async scrollToTop (page: Page) {
         const distance = -1 * 100; // should be less than or equal to window.innerHeight
         const delay = 100;
+        let currentScroll = 0;
             //  @ts-ignore
         while (await page.evaluate(() => document.scrollingElement.scrollTop !== 0)) {
             //  @ts-ignore
-        await page.evaluate((y) => { document.scrollingElement.scrollBy(0, y); }, distance);
-        await page.waitForTimeout(delay);
+            await page.evaluate((y) => { document.scrollingElement.scrollBy(0, y); }, distance);
+            await page.waitForTimeout(delay);
+            currentScroll += 1;
+
         }
     }
 
@@ -596,7 +609,6 @@ export class Crawler {
             let timeout: NodeJS.Timeout;
             try {
                 page = await this.getPage();
-                await page.evaluate(preloadFile)
             } catch (browserErr) {
                 reject(browserErr)
                 return;
@@ -609,20 +621,20 @@ export class Crawler {
             timeout = setTimeout(() => {
                 console.log('EXECUTE TIMEOUT');
                 resolve(crawlResults);
-            }, (TIME_TO_WAIT * 3 ) * 1000)
-
+            }, (TIME_TO_WAIT * 5 ) * 1000)
             try {
                 await page.goto(pageURL, {
-                    waitUntil: 'domcontentloaded'
+                    waitUntil: 'load'
                 });
-                await this.scrollToBottom(page);
+                // await this.scrollToBottom(page);
                 if(this.currentJob){
                     await this.handleSubURLScan(page, this.currentJob)
                 }
                 await page.waitForTimeout(TIME_TO_WAIT * 1000);
-                await this.scrollToTop(page);
+                // await this.scrollToTop(page);
                 const instrumentationRecords = await this.collectInstrumentationRecordsFromPage(page);
                 if(instrumentationRecords.altered){
+                    console.log(`${'*'.repeat(10)} Found a WebAssembly module! ${'*'.repeat(10)}`)
                     const requestsForPage = this.capturedRequests.get(pageURL);
                     crawlResults = {
                         containsWebAssembly: true,
@@ -632,11 +644,11 @@ export class Crawler {
                         intrumentationRecords: instrumentationRecords
                     };
                     try{
+
                         await this.takeScreenshot(page);
-                        console.log('Insert instantiate!')
                         // await this.insertInstantiateIntoDatabase(`${pageURL}`, this.domain, instrumentationRecords, currentJob.parent);
-                    }catch(nonWasmFilesFoundError){
-                        console.log(nonWasmFilesFoundError);
+                    }catch(takeScreenshotError){
+                        console.log(takeScreenshotError);
                     }
                 }
 
@@ -657,7 +669,7 @@ export class Crawler {
         try {
             let page = await this.getPage();
             await page.goto(url, {
-                waitUntil: 'domcontentloaded'
+                waitUntil: 'load'
             });
             // await this.scrollToBottom(page);
             await page.waitForTimeout(TIME_TO_WAIT * 1000);
@@ -671,15 +683,15 @@ export class Crawler {
         }
     }
 
-    async screenshotPagesWithWebAssemblyDisabled(){
-        this.setLaunchOptions(false,true);
+    async screenshotPagesWithWebAssemblyDisabled(browser: string){
+        this.setLaunchOptions(browser,true);
         await this.startBrowser();
         const pagesToScreenshot: Set<string> = this.pagesWithWebAssembly;
         for(const url of pagesToScreenshot){
             try{
                 await this.screenshotPageOnly(url);
             } catch(screenshotOnlyError){
-                console.error(`Screenshot only error for ${url}`, screenshotOnlyError);
+                // console.error(`Screenshot only error for ${url}`, screenshotOnlyError);
             }
         }
         
@@ -699,15 +711,32 @@ export class Crawler {
     }
 
     async startBrowser() {
-        this.browser = null;
-        let browser: BrowserType<Browser>;
-        if(this.useFirefox){
-            browser = firefox;
-        } else {
-            browser = chromium;
-        }
         try{
-            this.browser = await browser.launch(this.launchOptions);
+            if(this.useFirefox){
+                this.browser = await firefox.launchPersistentContext(this.userDataDir,
+                    {
+                        // userPrefs: !this.WebAssemblyEnabled  ?  {
+                        //     'javascript.options.wasm': 'false'
+                        // } : undefined,
+                        // devtools: true,
+                        // dumpio: false,//!PROD,
+                        headless: HEADLESS_BROWSER
+                    }
+                );
+    
+            } else {
+                this.browser = await chromium.launchPersistentContext(this.userDataDir,
+                    {
+                        // userDataDir: ,
+                        args: !this.WebAssemblyEnabled ? [ '--js-flags=--noexpose_wasm'] : undefined,
+                          // args: ['--disable-setuid-sandbox', '--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage', `--js-flags=--dump-wasm-module-path=${MODULE_DUMP_PATH}`],
+                        // ignoreDefaultArgs: ['--disable-extensions'],
+                        // devtools: true,
+                        // dumpio: false,//!PROD,
+                        headless: HEADLESS_BROWSER
+                    }
+                );
+            }
         } catch(launchError){
             console.error('Launch Error', launchError);
         }

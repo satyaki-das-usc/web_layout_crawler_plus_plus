@@ -106,6 +106,7 @@ dist
 # Stores VSCode versions used for testing VSCode extensions
 .vscode-test
 
-DevProfile/*
+ChromeProfile/*
+FirefoxProfile/*
 JSOutput/*
 Screenshots/*

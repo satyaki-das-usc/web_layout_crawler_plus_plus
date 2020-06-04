@@ -2,8 +2,10 @@
     "mysql_host": "chiquis.duckdns.org",
     "mysql_user": "alanr",
     "mysql_password": "password",
-    "mysql_database": "alexa_reader",
+    "mysql_database": "web_layout_crawler",
     "mysql_port": 3306,
+    "max_crawl_depth_level": 0,
+    "time_to_wait_on_page": 8,
     "chromium_path": "../chromium/chrome",
     "crawler_js_dump_path":  "../JSOutput",
     "crawler_screenshot_path":  "../Screenshots"
