@@ -137,19 +137,17 @@ if (argv.url != null || URL_TO_SCAN != null) {
                 switch (_b.label) {
                     case 0:
                         urlToScan = (_a = URL_TO_SCAN !== null && URL_TO_SCAN !== void 0 ? URL_TO_SCAN : argv.url) !== null && _a !== void 0 ? _a : '';
-                        if (!(urlToScan !== '')) return [3 /*break*/, 3];
+                        if (!(urlToScan !== '')) return [3 /*break*/, 2];
                         db = new MySQLConnector_1.MySQLConnector();
                         crawler = new WebCrawler_1.Crawler(db, urlToScan, userDataDir);
                         return [4 /*yield*/, crawler.scanPages()];
                     case 1:
                         _b.sent();
                         console.log('Scan for screenshots only');
-                        return [4 /*yield*/, crawler.screenshotPagesWithWebAssemblyDisabled()];
-                    case 2:
-                        _b.sent();
+                        // await crawler.screenshotPagesWithWebAssemblyDisabled();
                         db.close();
-                        _b.label = 3;
-                    case 3: return [2 /*return*/];
+                        _b.label = 2;
+                    case 2: return [2 /*return*/];
                 }
             });
         });

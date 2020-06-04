@@ -91,7 +91,7 @@ if(argv.url != null || URL_TO_SCAN != null){
             const crawler = new Crawler(db, urlToScan, userDataDir);
             await crawler.scanPages();
             console.log('Scan for screenshots only')
-            await crawler.screenshotPagesWithWebAssemblyDisabled();
+            // await crawler.screenshotPagesWithWebAssemblyDisabled();
             db.close()
         }
         

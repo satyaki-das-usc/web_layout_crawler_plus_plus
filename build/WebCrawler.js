@@ -123,8 +123,10 @@ var Crawler = /** @class */ (function () {
         var screenshotDir = path_1.resolve(SCREENSHOT_OUTPUT_PATH, WebAssemblyEnabledSubDirectoryName, domainName);
         this.screenshotOutputPath = screenshotDir;
         var launchOptions = {
+            product: 'firefox',
             userDataDir: this.userDataDir,
-            args: disableWebAssembly ? ['--js-flags=--noexpose_wasm'] : undefined,
+            executablePath: "C:\\Program Files\\Firefox Nightly\\firefox.exe",
+            // args: disableWebAssembly ? ['--js-flags=--noexpose_wasm'] : undefined,
             // args: ['--disable-setuid-sandbox', '--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage', `--js-flags=--dump-wasm-module-path=${MODULE_DUMP_PATH}`],
             // ignoreDefaultArgs: ['--disable-extensions'],
             devtools: true,
@@ -406,10 +408,11 @@ var Crawler = /** @class */ (function () {
             var e_3, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
-                    case 0: return [4 /*yield*/, this.setup()];
+                    case 0:
+                        this.setLaunchOptions(false);
+                        return [4 /*yield*/, this.setup()];
                     case 1:
                         _c.sent();
-                        this.setLaunchOptions(false);
                         firstJob = new Queue_1.QueueJob(this.domain, this.domain, 0);
                         this.pagesToVisit.enqueue(firstJob);
                         _c.label = 2;
