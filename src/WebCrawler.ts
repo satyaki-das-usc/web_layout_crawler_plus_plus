@@ -161,9 +161,9 @@ export class Crawler {
         this.screenshotOutputPath = screenshotDir;
 
         const launchOptions: LaunchOptions = {
-            product: 'firefox',
+            // product: 'firefox',
             userDataDir: this.userDataDir,
-            executablePath: "C:\\Program Files\\Firefox Nightly\\firefox.exe",
+            // executablePath: "C:\\Program Files\\Firefox Nightly\\firefox.exe",
             // args: disableWebAssembly ? ['--js-flags=--noexpose_wasm'] : undefined,
             // args: ['--disable-setuid-sandbox', '--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage', `--js-flags=--dump-wasm-module-path=${MODULE_DUMP_PATH}`],
             // ignoreDefaultArgs: ['--disable-extensions'],
