@@ -63,7 +63,8 @@ var URL = require('url').URL;
 var fs_extra_1 = __importDefault(require("fs-extra")); // v 5.0.0
 var sanitize_filename_1 = __importDefault(require("sanitize-filename"));
 var PROD = process.env.NODE_ENV === 'production' ? true : false;
-var puppeteer_1 = require("puppeteer");
+var playwright_1 = __importDefault(require("playwright"));
+var chromium = playwright_1.default.chromium, firefox = playwright_1.default.firefox;
 var path_1 = require("path");
 var Queue_1 = require("./Queue");
 var config_json_1 = require("./config.json");
@@ -123,14 +124,13 @@ var Crawler = /** @class */ (function () {
         var screenshotDir = path_1.resolve(SCREENSHOT_OUTPUT_PATH, WebAssemblyEnabledSubDirectoryName, domainName);
         this.screenshotOutputPath = screenshotDir;
         var launchOptions = {
-            product: 'firefox',
-            userDataDir: this.userDataDir,
-            executablePath: "C:\\Program Files\\Firefox Nightly\\firefox.exe",
+            // userDataDir: this.userDataDir,
+            // executablePath: "C:\\Program Files\\Firefox Nightly\\firefox.exe",
             // args: disableWebAssembly ? ['--js-flags=--noexpose_wasm'] : undefined,
             // args: ['--disable-setuid-sandbox', '--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage', `--js-flags=--dump-wasm-module-path=${MODULE_DUMP_PATH}`],
             // ignoreDefaultArgs: ['--disable-extensions'],
             devtools: true,
-            dumpio: false,
+            // dumpio: false,//!PROD,
             headless: false
         };
         this.launchOptions = launchOptions;
@@ -262,29 +262,29 @@ var Crawler = /** @class */ (function () {
                         browser = _a.sent();
                         _a.label = 2;
                     case 2:
-                        _a.trys.push([2, 4, , 5]);
+                        _a.trys.push([2, 5, , 6]);
                         return [4 /*yield*/, browser.newPage()];
                     case 3:
                         page = _a.sent();
-                        return [3 /*break*/, 5];
+                        return [4 /*yield*/, page.evaluate(preloadFile)];
                     case 4:
+                        _a.sent();
+                        return [3 /*break*/, 6];
+                    case 5:
                         newPageError_1 = _a.sent();
                         console.error('New Page Error:', newPageError_1);
                         throw newPageError_1;
-                    case 5:
+                    case 6:
                         if (page == null) {
                             throw new Error('Cannot open newpage');
                         }
-                        return [4 /*yield*/, page.setViewport({
+                        return [4 /*yield*/, page.setViewportSize({
                                 width: 1920,
                                 height: 1080
                             })];
-                    case 6:
-                        _a.sent();
-                        return [4 /*yield*/, page.evaluateOnNewDocument(preloadFile)];
                     case 7:
                         _a.sent();
-                        page.on('workercreated', function (worker) { return __awaiter(_this, void 0, void 0, function () {
+                        page.on('worker', function (worker) { return __awaiter(_this, void 0, void 0, function () {
                             var currentWorkerWebAssembly, err_1;
                             return __generator(this, function (_a) {
                                 switch (_a.label) {
@@ -315,54 +315,48 @@ var Crawler = /** @class */ (function () {
                                 }
                             });
                         }); });
-                        return [4 /*yield*/, page.setRequestInterception(true)];
-                    case 8:
-                        _a.sent();
-                        page.on('request', function (interceptedRequest) {
-                            var _a, _b;
-                            var requestType = interceptedRequest.resourceType();
-                            var requestURL = interceptedRequest.url();
-                            var currentURL = (_a = _this.currentJob) === null || _a === void 0 ? void 0 : _a.url;
-                            if (currentURL != null) {
-                                if (!_this.capturedRequests.get(currentURL)) {
-                                    _this.capturedRequests.set(currentURL, []);
-                                }
-                                (_b = _this.capturedRequests.get(currentURL)) === null || _b === void 0 ? void 0 : _b.push(requestURL);
-                            }
-                            interceptedRequest.continue();
-                        });
                         currentBase64Index = 0;
                         page.on('response', function (response) { return __awaiter(_this, void 0, void 0, function () {
-                            var responseStatus, requestType, responseURL, filePath, currentURL, _a, _b, _c;
-                            var _d, _e;
-                            return __generator(this, function (_f) {
-                                switch (_f.label) {
+                            var responseStatus, requestType, responseURL, currentURL, filePath, currentURL_1, responseBody, saveResponseError_1;
+                            var _a, _b, _c, _d;
+                            return __generator(this, function (_e) {
+                                switch (_e.label) {
                                     case 0:
                                         responseStatus = response.status();
                                         if (!(responseStatus === 200)) return [3 /*break*/, 5];
                                         requestType = response.request().resourceType();
                                         responseURL = response.url();
+                                        currentURL = (_a = this.currentJob) === null || _a === void 0 ? void 0 : _a.url;
+                                        if (currentURL != null) {
+                                            if (!this.capturedRequests.get(currentURL)) {
+                                                this.capturedRequests.set(currentURL, []);
+                                            }
+                                            (_b = this.capturedRequests.get(currentURL)) === null || _b === void 0 ? void 0 : _b.push(responseURL);
+                                        }
                                         filePath = void 0;
                                         if (responseURL.includes('data:')) {
-                                            currentURL = (_e = (_d = this.currentJob) === null || _d === void 0 ? void 0 : _d.url) !== null && _e !== void 0 ? _e : 'Base64Encoded';
-                                            filePath = this.sanitizeURLForFileSystem(currentURL, this.finalDomainOutputPath);
+                                            currentURL_1 = (_d = (_c = this.currentJob) === null || _c === void 0 ? void 0 : _c.url) !== null && _d !== void 0 ? _d : 'Base64Encoded';
+                                            filePath = this.sanitizeURLForFileSystem(currentURL_1, this.finalDomainOutputPath);
                                             filePath = path_1.dirname(filePath);
                                             filePath = path_1.resolve(filePath, "Base64_Encoded_" + currentBase64Index++);
                                         }
                                         else {
                                             filePath = this.sanitizeURLForFileSystem(responseURL, this.finalDomainOutputPath);
                                         }
-                                        _f.label = 1;
+                                        _e.label = 1;
                                     case 1:
-                                        _f.trys.push([1, , 4, 5]);
-                                        _b = (_a = fs_extra_1.default).outputFile;
-                                        _c = [filePath];
-                                        return [4 /*yield*/, response.buffer()];
-                                    case 2: return [4 /*yield*/, _b.apply(_a, _c.concat([_f.sent()]))];
+                                        _e.trys.push([1, 4, , 5]);
+                                        return [4 /*yield*/, response.body()];
+                                    case 2:
+                                        responseBody = _e.sent();
+                                        return [4 /*yield*/, fs_extra_1.default.outputFile(filePath, responseBody)];
                                     case 3:
-                                        _f.sent();
+                                        _e.sent();
                                         return [3 /*break*/, 5];
-                                    case 4: return [7 /*endfinally*/];
+                                    case 4:
+                                        saveResponseError_1 = _e.sent();
+                                        console.error("Save response error for " + responseURL, saveResponseError_1);
+                                        return [3 /*break*/, 5];
                                     case 5: return [2 /*return*/];
                                 }
                             });
@@ -417,9 +411,9 @@ var Crawler = /** @class */ (function () {
                         this.pagesToVisit.enqueue(firstJob);
                         _c.label = 2;
                     case 2:
-                        if (!!this.pagesToVisit.isEmpty()) return [3 /*break*/, 20];
+                        if (!!this.pagesToVisit.isEmpty()) return [3 /*break*/, 19];
                         currentJob = this.pagesToVisit.dequeue();
-                        if (!(currentJob != null)) return [3 /*break*/, 19];
+                        if (!(currentJob != null)) return [3 /*break*/, 18];
                         this.currentJob = currentJob;
                         currentURL = currentJob.url;
                         if (this.scannedSubPages.has(currentURL)) {
@@ -450,52 +444,50 @@ var Crawler = /** @class */ (function () {
                         _c.sent();
                         return [3 /*break*/, 2];
                     case 8:
-                        _c.trys.push([8, 18, , 19]);
-                        return [4 /*yield*/, ((_a = this.browser) === null || _a === void 0 ? void 0 : _a.pages())];
+                        _c.trys.push([8, 17, , 18]);
+                        browserPagesOpen = (_a = this.browser) === null || _a === void 0 ? void 0 : _a.contexts();
+                        if (!(browserPagesOpen != null)) return [3 /*break*/, 16];
+                        if (!(browserPagesOpen.length > 3)) return [3 /*break*/, 16];
+                        _c.label = 9;
                     case 9:
-                        browserPagesOpen = _c.sent();
-                        if (!(browserPagesOpen != null)) return [3 /*break*/, 17];
-                        if (!(browserPagesOpen.length > 3)) return [3 /*break*/, 17];
+                        _c.trys.push([9, 14, 15, 16]);
+                        browserPagesOpen_1 = (e_3 = void 0, __values(browserPagesOpen)), browserPagesOpen_1_1 = browserPagesOpen_1.next();
                         _c.label = 10;
                     case 10:
-                        _c.trys.push([10, 15, 16, 17]);
-                        browserPagesOpen_1 = (e_3 = void 0, __values(browserPagesOpen)), browserPagesOpen_1_1 = browserPagesOpen_1.next();
-                        _c.label = 11;
-                    case 11:
-                        if (!!browserPagesOpen_1_1.done) return [3 /*break*/, 14];
+                        if (!!browserPagesOpen_1_1.done) return [3 /*break*/, 13];
                         page = browserPagesOpen_1_1.value;
                         return [4 /*yield*/, page.close()];
-                    case 12:
+                    case 11:
                         _c.sent();
-                        _c.label = 13;
-                    case 13:
+                        _c.label = 12;
+                    case 12:
                         browserPagesOpen_1_1 = browserPagesOpen_1.next();
-                        return [3 /*break*/, 11];
-                    case 14: return [3 /*break*/, 17];
-                    case 15:
+                        return [3 /*break*/, 10];
+                    case 13: return [3 /*break*/, 16];
+                    case 14:
                         e_3_1 = _c.sent();
                         e_3 = { error: e_3_1 };
-                        return [3 /*break*/, 17];
-                    case 16:
+                        return [3 /*break*/, 16];
+                    case 15:
                         try {
                             if (browserPagesOpen_1_1 && !browserPagesOpen_1_1.done && (_b = browserPagesOpen_1.return)) _b.call(browserPagesOpen_1);
                         }
                         finally { if (e_3) throw e_3.error; }
                         return [7 /*endfinally*/];
-                    case 17: return [3 /*break*/, 19];
-                    case 18:
+                    case 16: return [3 /*break*/, 18];
+                    case 17:
                         browserPagesCloseErr_1 = _c.sent();
                         console.error('Browser page close error', browserPagesCloseErr_1);
-                        return [3 /*break*/, 19];
-                    case 19: return [3 /*break*/, 2];
-                    case 20:
-                        if (!!this.containsWebAssembly) return [3 /*break*/, 22];
+                        return [3 /*break*/, 18];
+                    case 18: return [3 /*break*/, 2];
+                    case 19:
+                        if (!!this.containsWebAssembly) return [3 /*break*/, 21];
                         return [4 /*yield*/, this.cleanDomainDir()];
-                    case 21:
+                    case 20:
                         _c.sent();
-                        _c.label = 22;
-                    case 22: return [4 /*yield*/, this.teardown()];
-                    case 23:
+                        _c.label = 21;
+                    case 21: return [4 /*yield*/, this.teardown()];
+                    case 22:
                         _c.sent();
                         return [2 /*return*/];
                 }
@@ -505,15 +497,13 @@ var Crawler = /** @class */ (function () {
     Crawler.prototype.takeScreenshot = function (page) {
         var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
-            var screenshotOptions, screenshotBuffer, screenshotPath;
+            var screenshotBuffer, screenshotPath;
             return __generator(this, function (_c) {
                 switch (_c.label) {
-                    case 0:
-                        screenshotOptions = {
+                    case 0: return [4 /*yield*/, page.screenshot({
                             type: 'png',
                             fullPage: true
-                        };
-                        return [4 /*yield*/, page.screenshot(screenshotOptions)];
+                        })];
                     case 1:
                         screenshotBuffer = _c.sent();
                         if (!((_a = this.currentJob) === null || _a === void 0 ? void 0 : _a.url)) return [3 /*break*/, 3];
@@ -728,7 +718,7 @@ var Crawler = /** @class */ (function () {
                     case 3:
                         //  @ts-ignore
                         _a.sent();
-                        return [4 /*yield*/, page.waitFor(delay)];
+                        return [4 /*yield*/, page.waitForTimeout(delay)];
                     case 4:
                         _a.sent();
                         return [3 /*break*/, 1];
@@ -754,7 +744,7 @@ var Crawler = /** @class */ (function () {
                     case 3:
                         //  @ts-ignore
                         _a.sent();
-                        return [4 /*yield*/, page.waitFor(delay)];
+                        return [4 /*yield*/, page.waitForTimeout(delay)];
                     case 4:
                         _a.sent();
                         return [3 /*break*/, 1];
@@ -781,17 +771,21 @@ var Crawler = /** @class */ (function () {
                         crawlResults = { containsWebAssembly: false };
                         _a.label = 1;
                     case 1:
-                        _a.trys.push([1, 3, , 4]);
+                        _a.trys.push([1, 4, , 5]);
                         return [4 /*yield*/, this.getPage()];
                     case 2:
                         page = _a.sent();
-                        return [3 /*break*/, 4];
+                        return [4 /*yield*/, page.evaluate(preloadFile)];
                     case 3:
+                        _a.sent();
+                        return [3 /*break*/, 5];
+                    case 4:
                         browserErr_1 = _a.sent();
                         reject(browserErr_1);
                         return [2 /*return*/];
-                    case 4:
-                        page.on('error', function (error) { return __awaiter(_this, void 0, void 0, function () {
+                    case 5:
+                        //@ts-ignore
+                        page.on("crash", function (error) { return __awaiter(_this, void 0, void 0, function () {
                             return __generator(this, function (_a) {
                                 reject(error);
                                 return [2 /*return*/];
@@ -801,32 +795,32 @@ var Crawler = /** @class */ (function () {
                             console.log('EXECUTE TIMEOUT');
                             resolve(crawlResults);
                         }, (TIME_TO_WAIT * 3) * 1000);
-                        _a.label = 5;
-                    case 5:
-                        _a.trys.push([5, 18, 19, 20]);
+                        _a.label = 6;
+                    case 6:
+                        _a.trys.push([6, 19, 20, 21]);
                         return [4 /*yield*/, page.goto(pageURL, {
                                 waitUntil: 'domcontentloaded'
                             })];
-                    case 6:
-                        _a.sent();
-                        return [4 /*yield*/, this.scrollToBottom(page)];
                     case 7:
                         _a.sent();
-                        if (!this.currentJob) return [3 /*break*/, 9];
-                        return [4 /*yield*/, this.handleSubURLScan(page, this.currentJob)];
+                        return [4 /*yield*/, this.scrollToBottom(page)];
                     case 8:
                         _a.sent();
-                        _a.label = 9;
-                    case 9: return [4 /*yield*/, page.waitFor(TIME_TO_WAIT * 1000)];
-                    case 10:
+                        if (!this.currentJob) return [3 /*break*/, 10];
+                        return [4 /*yield*/, this.handleSubURLScan(page, this.currentJob)];
+                    case 9:
                         _a.sent();
-                        return [4 /*yield*/, this.scrollToTop(page)];
+                        _a.label = 10;
+                    case 10: return [4 /*yield*/, page.waitForTimeout(TIME_TO_WAIT * 1000)];
                     case 11:
                         _a.sent();
-                        return [4 /*yield*/, this.collectInstrumentationRecordsFromPage(page)];
+                        return [4 /*yield*/, this.scrollToTop(page)];
                     case 12:
+                        _a.sent();
+                        return [4 /*yield*/, this.collectInstrumentationRecordsFromPage(page)];
+                    case 13:
                         instrumentationRecords = _a.sent();
-                        if (!instrumentationRecords.altered) return [3 /*break*/, 16];
+                        if (!instrumentationRecords.altered) return [3 /*break*/, 17];
                         requestsForPage = this.capturedRequests.get(pageURL);
                         crawlResults = {
                             containsWebAssembly: true,
@@ -835,31 +829,31 @@ var Crawler = /** @class */ (function () {
                             capturedRequests: requestsForPage,
                             intrumentationRecords: instrumentationRecords
                         };
-                        _a.label = 13;
-                    case 13:
-                        _a.trys.push([13, 15, , 16]);
-                        return [4 /*yield*/, this.takeScreenshot(page)];
+                        _a.label = 14;
                     case 14:
+                        _a.trys.push([14, 16, , 17]);
+                        return [4 /*yield*/, this.takeScreenshot(page)];
+                    case 15:
                         _a.sent();
                         console.log('Insert instantiate!');
-                        return [3 /*break*/, 16];
-                    case 15:
+                        return [3 /*break*/, 17];
+                    case 16:
                         nonWasmFilesFoundError_1 = _a.sent();
                         console.log(nonWasmFilesFoundError_1);
-                        return [3 /*break*/, 16];
-                    case 16: return [4 /*yield*/, page.close()];
-                    case 17:
-                        _a.sent();
-                        return [3 /*break*/, 20];
+                        return [3 /*break*/, 17];
+                    case 17: return [4 /*yield*/, page.close()];
                     case 18:
+                        _a.sent();
+                        return [3 /*break*/, 21];
+                    case 19:
                         err_2 = _a.sent();
                         console.error('Navigation Error:', err_2);
                         reject(err_2);
                         return [2 /*return*/];
-                    case 19:
+                    case 20:
                         clearTimeout(timeout);
                         return [7 /*endfinally*/];
-                    case 20:
+                    case 21:
                         resolve(crawlResults);
                         return [2 /*return*/];
                 }
@@ -882,7 +876,7 @@ var Crawler = /** @class */ (function () {
                     case 2:
                         _a.sent();
                         // await this.scrollToBottom(page);
-                        return [4 /*yield*/, page.waitFor(TIME_TO_WAIT * 1000)];
+                        return [4 /*yield*/, page.waitForTimeout(TIME_TO_WAIT * 1000)];
                     case 3:
                         // await this.scrollToBottom(page);
                         _a.sent();
@@ -978,16 +972,22 @@ var Crawler = /** @class */ (function () {
     };
     Crawler.prototype.startBrowser = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var _a, launchError_1;
+            var browser, _a, launchError_1;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
                         this.browser = null;
+                        if (this.useFirefox) {
+                            browser = firefox;
+                        }
+                        else {
+                            browser = chromium;
+                        }
                         _b.label = 1;
                     case 1:
                         _b.trys.push([1, 3, , 4]);
                         _a = this;
-                        return [4 /*yield*/, puppeteer_1.launch(this.launchOptions)];
+                        return [4 /*yield*/, browser.launch(this.launchOptions)];
                     case 2:
                         _a.browser = _b.sent();
                         return [3 /*break*/, 4];

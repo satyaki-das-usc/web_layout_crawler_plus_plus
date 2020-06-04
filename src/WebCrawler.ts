@@ -23,15 +23,10 @@ import fse from 'fs-extra'; // v 5.0.0
 import sanitize from "sanitize-filename";
 import {MySQLConnector} from './MySQLConnector';
 const PROD = process.env.NODE_ENV === 'production' ? true : false;
-import {
-    launch,
-    Browser,
-    Page,
-    JSHandle,
-    Base64ScreenShotOptions,
-    BinaryScreenShotOptions,
-    LaunchOptions
-} from 'puppeteer';
+import playwright, { Browser, JSHandle, LaunchOptions, Page, BrowserType } from 'playwright';
+const { chromium, firefox } = playwright;
+
+
 import {
     join,
     resolve as _resolve,
@@ -161,14 +156,13 @@ export class Crawler {
         this.screenshotOutputPath = screenshotDir;
 
         const launchOptions: LaunchOptions = {
-            product: 'firefox',
-            userDataDir: this.userDataDir,
-            executablePath: "C:\\Program Files\\Firefox Nightly\\firefox.exe",
+            // userDataDir: this.userDataDir,
+            // executablePath: "C:\\Program Files\\Firefox Nightly\\firefox.exe",
             // args: disableWebAssembly ? ['--js-flags=--noexpose_wasm'] : undefined,
             // args: ['--disable-setuid-sandbox', '--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage', `--js-flags=--dump-wasm-module-path=${MODULE_DUMP_PATH}`],
             // ignoreDefaultArgs: ['--disable-extensions'],
             devtools: true,
-            dumpio: false,//!PROD,
+            // dumpio: false,//!PROD,
             headless: false
         };
 
@@ -262,6 +256,8 @@ export class Crawler {
             const browser = await this.getBrowser()
             try{
                 page = await browser.newPage();
+                await page.evaluate(preloadFile)
+
             } catch(newPageError){
                 console.error('New Page Error:', newPageError);
                 throw newPageError
@@ -271,12 +267,11 @@ export class Crawler {
                 throw new Error('Cannot open newpage');
             }
 
-            await page.setViewport({
+            await page.setViewportSize({
                 width: 1920,
                 height: 1080
             });
-            await page.evaluateOnNewDocument(preloadFile)
-            page.on('workercreated', async worker => {
+            page.on('worker', async worker => {
                 // console.log('Worker created: ' + worker.url())
                 try {
                     await worker.evaluate(preloadFile)
@@ -293,26 +288,32 @@ export class Crawler {
                     console.error('Worker Eval', err)
                 }
             });
-            await page.setRequestInterception(true);
-            page.on('request', (interceptedRequest) => {
-                let requestType = interceptedRequest.resourceType();
-                let requestURL = interceptedRequest.url()
-                const currentURL = this.currentJob?.url;
-                if(currentURL != null){
-                        if (!this.capturedRequests.get(currentURL)) {
-                            this.capturedRequests.set(currentURL,[]);
-                        }
-                        this.capturedRequests.get(currentURL)?.push(requestURL);
-                }
-                interceptedRequest.continue();
-            });
+            // await page.setRequestInterception(true);
+            // page.on('request', (interceptedRequest) => {
+            //     let requestType = interceptedRequest.resourceType();
+            //     let requestURL = interceptedRequest.url()
+            //     const currentURL = this.currentJob?.url;
+            //     if(currentURL != null){
+            //             if (!this.capturedRequests.get(currentURL)) {
+            //                 this.capturedRequests.set(currentURL,[]);
+            //             }
+            //             this.capturedRequests.get(currentURL)?.push(requestURL);
+            //     }
+            //     interceptedRequest.continue();
+            // });
             let currentBase64Index = 0;
             page.on('response', async (response) => {
                 const responseStatus = response.status();
                 if (responseStatus === 200) {
                     const requestType = response.request().resourceType();
                     const responseURL = response.url();
-
+                    const currentURL = this.currentJob?.url;
+                    if(currentURL != null){
+                        if (!this.capturedRequests.get(currentURL)) {
+                            this.capturedRequests.set(currentURL,[]);
+                        }
+                        this.capturedRequests.get(currentURL)?.push(responseURL);
+                    }
                     let filePath;
                     if(responseURL.includes('data:')){
                         //Write out to file
@@ -326,8 +327,10 @@ export class Crawler {
                         
                     }
                     try{
-                        await fse.outputFile(filePath, await response.buffer());
-                    }finally{
+                        const responseBody = await response.body()
+                        await fse.outputFile(filePath,responseBody );
+                    }catch(saveResponseError){
+                        console.error(`Save response error for ${responseURL}`, saveResponseError);
                     }
                    
                 }
@@ -382,7 +385,7 @@ export class Crawler {
 
                 //check how many open pages
                 try{
-                    const browserPagesOpen = await this.browser?.pages();
+                    const browserPagesOpen = this.browser?.contexts();
                     if(browserPagesOpen != null){
                         if(browserPagesOpen.length > 3){
                             for(const page of browserPagesOpen){
@@ -408,11 +411,10 @@ export class Crawler {
     }
 
     async takeScreenshot(page: Page){
-        const screenshotOptions: BinaryScreenShotOptions = {
+        const screenshotBuffer = await page.screenshot({
             type: 'png',
             fullPage: true
-        };
-        const screenshotBuffer = await page.screenshot(screenshotOptions);
+        });
         if(this.currentJob?.url){
             const screenshotPath = this.sanitizeURLForFileSystem(this.currentJob?.url, this.screenshotOutputPath) + '.png';
             await fse.outputFile(screenshotPath, screenshotBuffer);
@@ -563,7 +565,7 @@ export class Crawler {
         while (await page.evaluate(() => document.scrollingElement.scrollTop + window.innerHeight < document.scrollingElement.scrollHeight)) {
             //  @ts-ignore
         await page.evaluate((y) => { document.scrollingElement.scrollBy(0, y); }, distance);
-        await page.waitFor(delay);
+        await page.waitForTimeout(delay);
         }
     }
 
@@ -574,7 +576,7 @@ export class Crawler {
         while (await page.evaluate(() => document.scrollingElement.scrollTop !== 0)) {
             //  @ts-ignore
         await page.evaluate((y) => { document.scrollingElement.scrollBy(0, y); }, distance);
-        await page.waitFor(delay);
+        await page.waitForTimeout(delay);
         }
     }
 
@@ -594,12 +596,13 @@ export class Crawler {
             let timeout: NodeJS.Timeout;
             try {
                 page = await this.getPage();
+                await page.evaluate(preloadFile)
             } catch (browserErr) {
                 reject(browserErr)
                 return;
             }
-
-            page.on('error', async (error: any) => {
+            //@ts-ignore
+            page.on("crash", async (error: any) => {
                 reject(error)
             });
 
@@ -616,7 +619,7 @@ export class Crawler {
                 if(this.currentJob){
                     await this.handleSubURLScan(page, this.currentJob)
                 }
-                await page.waitFor(TIME_TO_WAIT * 1000);
+                await page.waitForTimeout(TIME_TO_WAIT * 1000);
                 await this.scrollToTop(page);
                 const instrumentationRecords = await this.collectInstrumentationRecordsFromPage(page);
                 if(instrumentationRecords.altered){
@@ -657,7 +660,7 @@ export class Crawler {
                 waitUntil: 'domcontentloaded'
             });
             // await this.scrollToBottom(page);
-            await page.waitFor(TIME_TO_WAIT * 1000);
+            await page.waitForTimeout(TIME_TO_WAIT * 1000);
             // await this.scrollToTop(page);
             await this.takeScreenshot(page);
 
@@ -697,9 +700,14 @@ export class Crawler {
 
     async startBrowser() {
         this.browser = null;
-
+        let browser: BrowserType<Browser>;
+        if(this.useFirefox){
+            browser = firefox;
+        } else {
+            browser = chromium;
+        }
         try{
-            this.browser = await launch(this.launchOptions);
+            this.browser = await browser.launch(this.launchOptions);
         } catch(launchError){
             console.error('Launch Error', launchError);
         }
