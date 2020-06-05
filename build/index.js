@@ -35,6 +35,17 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __values = (this && this.__values) || function(o) {
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
+    if (m) return m.call(o);
+    if (o && typeof o.length === "number") return {
+        next: function () {
+            if (o && i >= o.length) o = void 0;
+            return { value: o && o[i++], done: !o };
+        }
+    };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -48,10 +59,12 @@ var argv = require('yargs')
     alias: 'u',
     type: 'string',
     description: 'URL to scan',
+    demandOption: true //Disable if implementing getNextSite() function
 })
     .argv;
 var PROD = process.env.NODE_ENV === 'production' ? true : false;
 var URL_TO_SCAN = process.env.URL_TO_SCAN;
+//Not implemented in DB, Can be replaced manually
 function getNextSite(db) {
     return __awaiter(this, void 0, void 0, function () {
         var sqlString, siteResult, e_1;
@@ -87,73 +100,63 @@ function waitFor(seconds) {
     });
 }
 function main() {
+    var _a;
     return __awaiter(this, void 0, void 0, function () {
-        var randomNumber, db, domain, crawler, mainScanError_1;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
+        var randomNumber, db, urlToScan, db_1, crawler, _b, _c, browser, e_2_1;
+        var e_2, _d;
+        return __generator(this, function (_e) {
+            switch (_e.label) {
                 case 0:
                     randomNumber = Math.floor(Math.random() * 10);
                     return [4 /*yield*/, waitFor(randomNumber * 1000)];
                 case 1:
-                    _a.sent();
+                    _e.sent();
                     db = new MySQLConnector_1.MySQLConnector();
-                    return [4 /*yield*/, getNextSite(db)];
+                    if (!(argv.url != null || URL_TO_SCAN != null)) return [3 /*break*/, 11];
+                    urlToScan = (_a = URL_TO_SCAN !== null && URL_TO_SCAN !== void 0 ? URL_TO_SCAN : argv.url) !== null && _a !== void 0 ? _a : '';
+                    if (!(urlToScan !== '')) return [3 /*break*/, 11];
+                    db_1 = new MySQLConnector_1.MySQLConnector();
+                    crawler = new WebCrawler_1.Crawler(db_1, urlToScan);
+                    _e.label = 2;
                 case 2:
-                    domain = _a.sent();
-                    _a.label = 3;
+                    _e.trys.push([2, 8, 9, 10]);
+                    _b = __values(['chrome', 'firefox']), _c = _b.next();
+                    _e.label = 3;
                 case 3:
-                    if (!(domain != null)) return [3 /*break*/, 9];
-                    console.log("Crawling Site " + domain);
-                    _a.label = 4;
+                    if (!!_c.done) return [3 /*break*/, 7];
+                    browser = _c.value;
+                    console.log("Scanning with " + browser + ": WebAssembly Enabled");
+                    return [4 /*yield*/, crawler.scanPages(browser)];
                 case 4:
-                    _a.trys.push([4, 7, , 8]);
-                    crawler = new WebCrawler_1.Crawler(db, domain, userDataDir);
-                    return [4 /*yield*/, crawler.scanPages()];
+                    _e.sent();
+                    console.log("Scanning with " + browser + ": WebAssembly Disabled");
+                    return [4 /*yield*/, crawler.screenshotPagesWithWebAssemblyDisabled(browser)];
                 case 5:
-                    _a.sent();
-                    return [4 /*yield*/, getNextSite(db)];
+                    _e.sent();
+                    _e.label = 6;
                 case 6:
-                    domain = _a.sent();
-                    return [3 /*break*/, 8];
-                case 7:
-                    mainScanError_1 = _a.sent();
-                    console.error('Main scan error', mainScanError_1);
-                    return [3 /*break*/, 9];
-                case 8: return [3 /*break*/, 3];
+                    _c = _b.next();
+                    return [3 /*break*/, 3];
+                case 7: return [3 /*break*/, 10];
+                case 8:
+                    e_2_1 = _e.sent();
+                    e_2 = { error: e_2_1 };
+                    return [3 /*break*/, 10];
                 case 9:
+                    try {
+                        if (_c && !_c.done && (_d = _b.return)) _d.call(_b);
+                    }
+                    finally { if (e_2) throw e_2.error; }
+                    return [7 /*endfinally*/];
+                case 10:
+                    db_1.close();
+                    _e.label = 11;
+                case 11:
                     db.close();
                     return [2 /*return*/];
             }
         });
     });
 }
-console.log("                                                                                     \nAAA               lllllll                                                       RRRRRRRRRRRRRRRRR                                                  d::::::d                                                                          444444444  \nA:::A              l:::::l                                                       R::::::::::::::::R                                                 d::::::d                                                                         4::::::::4  \nA:::::A             l:::::l                                                       R::::::RRRRRR:::::R                                                d::::::d                                                                        4:::::::::4  \nA:::::::A            l:::::l                                                       RR:::::R     R:::::R                                               d:::::d                                                                        4::::44::::4  \nA:::::::::A            l::::l     eeeeeeeeeeee  xxxxxxx      xxxxxxxaaaaaaaaaaaaa     R::::R     R:::::R    eeeeeeeeeeee    aaaaaaaaaaaaa      ddddddddd:::::d     eeeeeeeeeeee    rrrrr   rrrrrrrrr        vvvvvvv           vvvvvvv4::::4 4::::4  \nA:::::A:::::A           l::::l   ee::::::::::::ee x:::::x    x:::::x a::::::::::::a    R::::R     R:::::R  ee::::::::::::ee  a::::::::::::a   dd::::::::::::::d   ee::::::::::::ee  r::::rrr:::::::::r        v:::::v         v:::::v4::::4  4::::4  \nA:::::A A:::::A          l::::l  e::::::eeeee:::::eex:::::x  x:::::x  aaaaaaaaa:::::a   R::::RRRRRR:::::R  e::::::eeeee:::::eeaaaaaaaaa:::::a d::::::::::::::::d  e::::::eeeee:::::eer:::::::::::::::::r        v:::::v       v:::::v4::::4   4::::4  \nA:::::A   A:::::A         l::::l e::::::e     e:::::e x:::::xx:::::x            a::::a   R:::::::::::::RR  e::::::e     e:::::e         a::::ad:::::::ddddd:::::d e::::::e     e:::::err::::::rrrrr::::::r        v:::::v     v:::::v4::::444444::::444\nA:::::A     A:::::A        l::::l e:::::::eeeee::::::e  x::::::::::x      aaaaaaa:::::a   R::::RRRRRR:::::R e:::::::eeeee::::::e  aaaaaaa:::::ad::::::d    d:::::d e:::::::eeeee::::::e r:::::r     r:::::r         v:::::v   v:::::v 4::::::::::::::::4\nA:::::AAAAAAAAA:::::A       l::::l e:::::::::::::::::e    x::::::::x     aa::::::::::::a   R::::R     R:::::Re:::::::::::::::::e aa::::::::::::ad:::::d     d:::::d e:::::::::::::::::e  r:::::r     rrrrrrr          v:::::v v:::::v  4444444444:::::444\nA:::::::::::::::::::::A      l::::l e::::::eeeeeeeeeee     x::::::::x    a::::aaaa::::::a   R::::R     R:::::Re::::::eeeeeeeeeee a::::aaaa::::::ad:::::d     d:::::d e::::::eeeeeeeeeee   r:::::r                       v:::::v:::::v             4::::4  \nA:::::AAAAAAAAAAAAA:::::A     l::::l e:::::::e             x::::::::::x  a::::a    a:::::a   R::::R     R:::::Re:::::::e         a::::a    a:::::ad:::::d     d:::::d e:::::::e            r:::::r                        v:::::::::v              4::::4  \nA:::::A             A:::::A   l::::::le::::::::e           x:::::xx:::::x a::::a    a:::::a RR:::::R     R:::::Re::::::::e        a::::a    a:::::ad::::::ddddd::::::dde::::::::e           r:::::r                         v:::::::v               4::::4  \nA:::::A               A:::::A  l::::::l e::::::::eeeeeeee  x:::::x  x:::::xa:::::aaaa::::::a R::::::R     R:::::R e::::::::eeeeeeeea:::::aaaa::::::a d:::::::::::::::::d e::::::::eeeeeeee   r:::::r                          v:::::v              44::::::44\nA:::::A                 A:::::A l::::::l  ee:::::::::::::e x:::::x    x:::::xa::::::::::aa:::aR::::::R     R:::::R  ee:::::::::::::e a::::::::::aa:::a d:::::::::ddd::::d  ee:::::::::::::e   r:::::r                           v:::v               4::::::::4\nAAAAAAA                   AAAAAAAllllllll    eeeeeeeeeeeeeexxxxxxx      xxxxxxxaaaaaaaaaa  aaaaRRRRRRRR     RRRRRRR    eeeeeeeeeeeeee  aaaaaaaaaa  aaaa  ddddddddd   ddddd    eeeeeeeeeeeeee   rrrrrrr                            vvv                4444444444\n    \n    \n    \n\n");
-if (argv.url != null || URL_TO_SCAN != null) {
-    (function () {
-        var _a;
-        return __awaiter(this, void 0, void 0, function () {
-            var urlToScan, db, crawler;
-            return __generator(this, function (_b) {
-                switch (_b.label) {
-                    case 0:
-                        urlToScan = (_a = URL_TO_SCAN !== null && URL_TO_SCAN !== void 0 ? URL_TO_SCAN : argv.url) !== null && _a !== void 0 ? _a : '';
-                        if (!(urlToScan !== '')) return [3 /*break*/, 2];
-                        db = new MySQLConnector_1.MySQLConnector();
-                        crawler = new WebCrawler_1.Crawler(db, urlToScan, userDataDir);
-                        return [4 /*yield*/, crawler.scanPages()];
-                    case 1:
-                        _b.sent();
-                        console.log('Scan for screenshots only');
-                        // await crawler.screenshotPagesWithWebAssemblyDisabled();
-                        db.close();
-                        _b.label = 2;
-                    case 2: return [2 /*return*/];
-                }
-            });
-        });
-    })();
-}
-else {
-    main();
-}
+main();
 //# sourceMappingURL=index.js.map

@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 import fs from 'fs';
 import util from 'util';
+import path from 'path';
 
 export function makeFileHash(filename:string , algorithm = 'sha256'):Promise<string> {
     //obtained from https://gist.github.com/GuillermoPena/9233069
@@ -28,6 +29,37 @@ export function makeFileHash(filename:string , algorithm = 'sha256'):Promise<str
 export function pr(obj:any ) {
     console.log(util.inspect(obj, false, null, true /* enable colors */ ))
 }
+
+export function makeChromeProfile(){
+  const userDataDir = path.resolve(__dirname, '../ChromeProfile');
+  if(!fs.existsSync(userDataDir)){
+		fs.mkdirSync(userDataDir, { recursive: true });
+	}
+  return userDataDir
+}
+
+export function makeFirefoxProfileWithWebAssemblyEnabled(){
+  const userDataDir = path.resolve(__dirname, '../FirefoxProfile', 'WebAssemblyEnabled');
+  if(!fs.existsSync(userDataDir)){
+		fs.mkdirSync(userDataDir, { recursive: true });
+	}
+  return userDataDir
+}
+
+export function makeFirefoxProfileWithWebAssemblyDisabled(){
+  const userDataDir = path.resolve(__dirname, '../FirefoxProfile', 'WebAssemblyDisabled');
+
+	if(!fs.existsSync(userDataDir)){
+		fs.mkdirSync(userDataDir, { recursive: true });
+	}
+
+	let prefs = `user_pref("javascript.options.wasm", false);`;
+
+  fs.writeFileSync(path.join(userDataDir, "./user.js"), prefs);
+  return userDataDir;
+}
+
+
 
 module.exports.makeFileHash = makeFileHash;
 module.exports.pr = pr;
