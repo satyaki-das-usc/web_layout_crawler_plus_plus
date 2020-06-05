@@ -1,29 +1,17 @@
-# README #
+# Web Layout Crawler #
 
-This README would normally document whatever steps are necessary to get your application up and running.
+This project uses the Playwright library to crawl a specified webpage with Chrome and Firefox with WebAssembly enabled and disabled. The downloaded webpage files are downloaded to the folder `JSOutput`. Screenshots are saved to the `Screenshots` folder. 
 
-### What is this repository for? ###
+## How to set up ###
 
-* Quick summary
-* Version
-* [Learn Markdown](https://bitbucket.org/tutorials/markdowndemo)
+### Prequisites
+* Node.js
+* MySQL
 
-### How do I get set up? ###
-
-* Summary of set up
-* Configuration
-* Dependencies
-* Database configuration
-* How to run tests
-* Deployment instructions
-
-### Contribution guidelines ###
-
-* Writing tests
-* Code review
-* Other guidelines
-
-### Who do I talk to? ###
-
-* Repo owner or admin
-* Other community or team contact
+### Installation
+1. Run the `found_page_schema.sql` under the `Database` folder to set up the schema and table for metadata logging.
+2. Run the command `npm install` in the root directory of this project (same as this README).
+3. Run `npm run build` to rebuild the source TypeScript files in the `src` folder and output them to the `build` folder as JavaScript files.
+4. Optionally, modify scripts under `src` or configure the scan parameters in the `config.json` under `src` and rebuild by running Step 3 again.
+### Usage
+1. Run the command `node ./build/index.js --url <url_to_san>` to scan the `<url_to_san>` and all of its first-level subpages. For example, try running the command `node ./build/index.js --url https://jkumara.github.io/pong-wasm/` as this site contains WebAssembly.
