@@ -107,5 +107,7 @@ dist
 .vscode-test
 
 DevProfile/*
+ChromeProfile/*
+FirefoxProfile/*
 JSOutput/*
 Screenshots/*
