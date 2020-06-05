@@ -109,6 +109,7 @@ var Crawler = /** @class */ (function () {
         this.WebAssemblyEnabled = true;
         this.useFirefox = false;
         this.pagesWithWebAssembly = new Set();
+        this.insertedURLs = new Set();
         this.capturedRequests = new Map();
         this.capturedWebSocketRequests = new Map();
         this.browser = null;
@@ -223,6 +224,7 @@ var Crawler = /** @class */ (function () {
                         return [4 /*yield*/, this.database.query(baseQuery, sqlParams)];
                     case 2:
                         _a.sent();
+                        this.insertedURLs.add(currentURL);
                         return [3 /*break*/, 4];
                     case 3:
                         sqlErr_1 = _a.sent();
@@ -851,7 +853,7 @@ var Crawler = /** @class */ (function () {
                         }, (TIME_TO_WAIT * 5) * 1000);
                         _a.label = 5;
                     case 5:
-                        _a.trys.push([5, 16, 17, 18]);
+                        _a.trys.push([5, 18, 19, 20]);
                         return [4 /*yield*/, page.goto(pageURL, {
                                 waitUntil: 'load'
                             })];
@@ -868,7 +870,7 @@ var Crawler = /** @class */ (function () {
                         return [4 /*yield*/, this.collectInstrumentationRecordsFromPage(page)];
                     case 10:
                         instrumentationRecords = _a.sent();
-                        if (!instrumentationRecords.altered) return [3 /*break*/, 14];
+                        if (!instrumentationRecords.altered) return [3 /*break*/, 16];
                         console.log('*'.repeat(10) + " Found a WebAssembly module! " + '*'.repeat(10));
                         requestsForPage = this.capturedRequests.get(pageURL);
                         crawlResults = {
@@ -880,28 +882,33 @@ var Crawler = /** @class */ (function () {
                         };
                         _a.label = 11;
                     case 11:
-                        _a.trys.push([11, 13, , 14]);
+                        _a.trys.push([11, 15, , 16]);
                         return [4 /*yield*/, this.takeScreenshot(page)];
                     case 12:
                         _a.sent();
-                        return [3 /*break*/, 14];
+                        if (!!this.insertedURLs.has(pageURL)) return [3 /*break*/, 14];
+                        return [4 /*yield*/, this.insertInstantiateIntoDatabase("" + pageURL, this.domain, instrumentationRecords, currentJob.parent)];
                     case 13:
+                        _a.sent();
+                        _a.label = 14;
+                    case 14: return [3 /*break*/, 16];
+                    case 15:
                         takeScreenshotError_1 = _a.sent();
                         console.log(takeScreenshotError_1);
-                        return [3 /*break*/, 14];
-                    case 14: return [4 /*yield*/, page.close()];
-                    case 15:
+                        return [3 /*break*/, 16];
+                    case 16: return [4 /*yield*/, page.close()];
+                    case 17:
                         _a.sent();
-                        return [3 /*break*/, 18];
-                    case 16:
+                        return [3 /*break*/, 20];
+                    case 18:
                         err_2 = _a.sent();
                         console.error('Navigation Error:', err_2);
                         reject(err_2);
                         return [2 /*return*/];
-                    case 17:
+                    case 19:
                         clearTimeout(timeout);
                         return [7 /*endfinally*/];
-                    case 18:
+                    case 20:
                         resolve(crawlResults);
                         return [2 /*return*/];
                 }

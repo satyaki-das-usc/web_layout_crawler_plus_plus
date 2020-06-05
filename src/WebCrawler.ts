@@ -135,6 +135,7 @@ export class Crawler {
     WebAssemblyEnabled: boolean = true;
     useFirefox = false;
     pagesWithWebAssembly: Set<string> = new Set()
+    insertedURLs: Set<string> = new Set();
 
     constructor(databaseConnector: MySQLConnector, domain: string) {
         this.capturedRequests = new Map();
@@ -224,6 +225,7 @@ export class Crawler {
              parent ?? null);
         try {
             await this.database.query(baseQuery, sqlParams);
+            this.insertedURLs.add(currentURL);
         } catch (sqlErr) {
             console.error('SQL Error', sqlErr)
         }
@@ -644,9 +646,10 @@ export class Crawler {
                         intrumentationRecords: instrumentationRecords
                     };
                     try{
-
                         await this.takeScreenshot(page);
-                        // await this.insertInstantiateIntoDatabase(`${pageURL}`, this.domain, instrumentationRecords, currentJob.parent);
+                        if(!this.insertedURLs.has(pageURL)){
+                            await this.insertInstantiateIntoDatabase(`${pageURL}`, this.domain, instrumentationRecords, currentJob.parent);
+                        }
                     }catch(takeScreenshotError){
                         console.log(takeScreenshotError);
                     }

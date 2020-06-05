@@ -6,6 +6,6 @@ CREATE TABLE web_layout_crawler.found_page (
   `StackTraceJSON` JSON,
   `CapturedRequests` JSON,
   `ScannedOn` datetime DEFAULT CURRENT_TIMESTAMP,
-  `ParentPage` varchar(2000) DEFAULT NULL
+  `ParentPage` varchar(2000) DEFAULT NULL,
   PRIMARY KEY (`ID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
