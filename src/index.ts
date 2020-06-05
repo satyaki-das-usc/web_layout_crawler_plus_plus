@@ -7,13 +7,14 @@ const argv = require('yargs')
         alias: 'u',
         type: 'string',
         description: 'URL to scan',
+        demandOption: true //Disable if implementing getNextSite() function
     })
     .argv;
 const PROD = process.env.NODE_ENV === 'production' ? true : false;
 const URL_TO_SCAN = process.env.URL_TO_SCAN;
 
+//Not implemented in DB, Can be replaced manually
 async function getNextSite(db: MySQLConnector) {
-
     const sqlString = `CALL getNextSite();`;
     try {
         const siteResult = await db.query(sqlString, []);
@@ -33,35 +34,10 @@ async function waitFor(seconds: number){
     })
 }
 async function main() {
-
     const randomNumber = Math.floor(Math.random() * 10);
-
     await waitFor(randomNumber * 1000)
-
     const db = new MySQLConnector();
-    let domain = await getNextSite(db);
-
-    while (domain != null) {
-        console.log(`Crawling Site ${domain}`)
-        try{
-            const crawler = new Crawler(db, domain);
-            // await crawler.scanPages(false);
-            domain = await getNextSite(db);
-        } catch(mainScanError){
-            console.error('Main scan error', mainScanError);
-            break;
-        }
-
-
-    }
-
-    db.close()
-
-}
-
-
-if(argv.url != null || URL_TO_SCAN != null){
-    (async function(){
+    if(argv.url != null || URL_TO_SCAN != null){
         const urlToScan:string = URL_TO_SCAN ?? argv.url ?? ''; 
         if(urlToScan !== ''){
             const db = new MySQLConnector();
@@ -74,8 +50,10 @@ if(argv.url != null || URL_TO_SCAN != null){
             }
             db.close()
         }
-        
-    })()
-} else {
-    main()
-}  
+    } 
+    db.close()
+}
+main();
+
+
+

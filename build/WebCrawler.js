@@ -49,22 +49,20 @@ var __values = (this && this.__values) || function(o) {
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
+var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Crawler = void 0;
 var fs_1 = require("fs");
-var os = require("os");
 var mv_1 = __importDefault(require("mv"));
 var CommonUtilities_1 = require("./CommonUtilities");
 var util_1 = require("util");
 var readdir = util_1.promisify(fs_1.readdir);
 var mkdir = util_1.promisify(fs_1.mkdir);
 var stat = util_1.promisify(fs_1.stat);
-var unlink = util_1.promisify(fs_1.unlink);
 var rmdir = util_1.promisify(fs_1.rmdir);
 var URL = require('url').URL;
 var fs_extra_1 = __importDefault(require("fs-extra")); // v 5.0.0
 var sanitize_filename_1 = __importDefault(require("sanitize-filename"));
-var PROD = process.env.NODE_ENV === 'production' ? true : false;
 var playwright_1 = __importDefault(require("playwright"));
 var chromium = playwright_1.default.chromium, firefox = playwright_1.default.firefox;
 var path_1 = require("path");
@@ -82,13 +80,14 @@ var MAX_CRAWL_DEPTH_LEVEL = (process.env.MAX__CRAWL_DEPTH_LEVEL != null) ? parse
 var HEADLESS_BROWSER = false;
 var TIME_TO_WAIT = (process.env.TIME_TO_WAIT != null) ? parseFloat(process.env.TIME_TO_WAIT) : config_json_1.time_to_wait_on_page;
 var SUBURL_SCAN_MODE;
-if (process.env.SUBURL_SCAN_MODE == null || process.env.SUBURL_SCAN_MODE.toLowerCase() == 'full') {
+var suburl_scan_option = (_a = process.env.SUBURL_SCAN_MODE) !== null && _a !== void 0 ? _a : config_json_1.suburl_scan_mode;
+if (config_json_1.suburl_scan_mode.toLowerCase() == 'full') {
     SUBURL_SCAN_MODE = SubURLScanMode.FULL;
 }
-else if (process.env.SUBURL_SCAN_MODE.toLowerCase() == 'random') {
+else if (config_json_1.suburl_scan_mode.toLowerCase() == 'random') {
     SUBURL_SCAN_MODE = SubURLScanMode.RANDOM;
 }
-else if (process.env.SUBURL_SCAN_MODE.toLowerCase() == 'first_n_percent') {
+else if (config_json_1.suburl_scan_mode.toLowerCase() == 'first_n_percent') {
     SUBURL_SCAN_MODE = SubURLScanMode.FIRST_N_PERCENT;
 }
 else {

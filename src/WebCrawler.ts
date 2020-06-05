@@ -6,7 +6,6 @@ import {
     stat as _stat,
     rmdir as _rmdir
 } from 'fs';
-const os = require("os");
 import mv from 'mv';
 import {makeChromeProfile, makeFirefoxProfileWithWebAssemblyDisabled, makeFirefoxProfileWithWebAssemblyEnabled} from './CommonUtilities';
 import {
@@ -15,7 +14,6 @@ import {
 const readdir = promisify(_readdir);
 const mkdir = promisify(_mkdir);
 const stat = promisify(_stat);
-const unlink = promisify(_unlink);
 const rmdir = promisify(_rmdir);
 const {
     URL
@@ -24,7 +22,6 @@ const {
 import fse from 'fs-extra'; // v 5.0.0
 import sanitize from "sanitize-filename";
 import {MySQLConnector} from './MySQLConnector';
-const PROD = process.env.NODE_ENV === 'production' ? true : false;
 import playwright, { Browser, JSHandle, Page, BrowserType, LaunchOptions, BrowserContext } from 'playwright';
 const { chromium, firefox } = playwright;
 
@@ -41,7 +38,8 @@ import {
     crawler_js_dump_path,
     crawler_screenshot_path,
     max_crawl_depth_level,
-    time_to_wait_on_page
+    time_to_wait_on_page,
+    suburl_scan_mode
 } from './config.json';
 enum SubURLScanMode {
     FULL = 'full',
@@ -53,18 +51,18 @@ const MAX_CRAWL_DEPTH_LEVEL = (process.env.MAX__CRAWL_DEPTH_LEVEL != null) ? par
 const HEADLESS_BROWSER = false;
 const TIME_TO_WAIT: number = (process.env.TIME_TO_WAIT != null) ? parseFloat(process.env.TIME_TO_WAIT) : time_to_wait_on_page;
 let SUBURL_SCAN_MODE: SubURLScanMode;
-if(process.env.SUBURL_SCAN_MODE == null || process.env.SUBURL_SCAN_MODE.toLowerCase() == 'full'){
+let suburl_scan_option = process.env.SUBURL_SCAN_MODE ?? suburl_scan_mode;
+if(suburl_scan_mode.toLowerCase() == 'full'){
     SUBURL_SCAN_MODE = SubURLScanMode.FULL;
 }
-else if(process.env.SUBURL_SCAN_MODE.toLowerCase() == 'random'){
+else if(suburl_scan_mode.toLowerCase() == 'random'){
     SUBURL_SCAN_MODE = SubURLScanMode.RANDOM;
 }
-else if(process.env.SUBURL_SCAN_MODE.toLowerCase() == 'first_n_percent'){
+else if(suburl_scan_mode.toLowerCase() == 'first_n_percent'){
     SUBURL_SCAN_MODE = SubURLScanMode.FIRST_N_PERCENT;
 } else {
     SUBURL_SCAN_MODE = SubURLScanMode.FULL;
 }
-
 const JS_OUTPUT_PATH = process.env.JS_OUTPUT_PATH || join(__dirname, crawler_js_dump_path);
 const SCREENSHOT_OUTPUT_PATH = process.env.SCREENSHOT_OUTPUT_PATH || join(__dirname, crawler_screenshot_path);
 const preloadFile = readFileSync(join(__dirname, './small_injector.js'), 'utf8');
@@ -75,7 +73,6 @@ declare global {
 }
 
 type Nullable < T > = T | null;
-
 declare interface WasmFile {
     instantiate: string[],
     instantiateStreaming: string[],
@@ -86,7 +83,6 @@ declare interface WasmFile {
     addInstantiate: Function,
     addInstantiateStreaming: Function
 }
-
 declare interface CrawlResults {
     containsWebAssembly: boolean,
     pageFound?: string,
