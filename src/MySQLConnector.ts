@@ -28,7 +28,8 @@ export class MySQLConnector {
             password,
             database,
             multipleStatements: true,
-            port: mysql_port
+            port: mysql_port,
+            insecureAuth: true
         });
         console.log(mysql_host, mysql_user, mysql_password, mysql_database, mysql_port)
         // this.connection.connect();

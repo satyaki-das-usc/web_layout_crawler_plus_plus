@@ -132,14 +132,18 @@ export class Crawler {
     useFirefox = false;
     pagesWithWebAssembly: Set<string> = new Set()
     insertedURLs: Set<string> = new Set();
-
-    constructor(databaseConnector: MySQLConnector, domain: string) {
+    shouldDownloadAllFiles: boolean;
+    currentBase64Index: number = 0;
+    constructor(databaseConnector: MySQLConnector, domain: string, argv: any) {
         this.capturedRequests = new Map();
         this.capturedWebSocketRequests = new Map();
         this.browser = null;
         this.database = databaseConnector;
         this.domain = domain;
         this.scannedSubPages = new Set<string>();
+        this.shouldDownloadAllFiles = argv.full;
+        this.handleFileResponse = this.handleFileResponse.bind(this);
+        this.handleWebAssemblyResponseOnly = this.handleWebAssemblyResponseOnly.bind(this);
     }
 
     setLaunchOptions(browser: string,disableWebAssembly=false){
@@ -251,6 +255,78 @@ export class Crawler {
     /**
      * Gets a new page and adds instrumentation code and request capturing
      */
+
+    async handleFileResponse(response: playwright.Response){
+            const responseStatus = response.status();
+            if (responseStatus === 200) {
+                const responseURL = response.url();
+                const currentURL = this.currentJob?.url;
+                if(currentURL != null){
+                    if (!this.capturedRequests.get(currentURL)) {
+                        this.capturedRequests.set(currentURL,[]);
+                    }
+                    this.capturedRequests.get(currentURL)?.push(responseURL);
+                }
+                let filePath;
+                if(responseURL.includes('data:')){
+                    //Write out to file
+                    const currentURL = this.currentJob?.url ?? 'Base64Encoded';
+                    filePath = this.sanitizeURLForFileSystem(currentURL, this.finalDomainOutputPath); 
+                    filePath = dirname(filePath);
+                    filePath = _resolve(filePath, `Base64_Encoded_${this.currentBase64Index++}`);
+
+                } else {
+                    filePath = this.sanitizeURLForFileSystem(responseURL, this.finalDomainOutputPath); 
+                }
+                try{
+                    const responseBody = await response.body()
+                    await fse.outputFile(filePath,responseBody);
+                }catch(saveResponseError){
+                    // console.error(`Save response error for ${responseURL}`);
+                }
+               
+            }
+    }
+
+    async handleWebAssemblyResponseOnly(response: playwright.Response){
+        const responseStatus = response.status();
+        if (responseStatus === 200) {
+            const responseURL = response.url();
+            const currentURL = this.currentJob?.url;
+            let filePath;
+            if(currentURL != null 
+                &&  ( responseURL.endsWith('.wasm')
+                || responseURL.endsWith('.wat')
+                || responseURL.endsWith('.wast') )
+            ){
+                if (!this.capturedRequests.get(currentURL)) {
+                    this.capturedRequests.set(currentURL,[]);
+                }
+                this.capturedRequests.get(currentURL)?.push(responseURL);
+
+                filePath = this.sanitizeURLForFileSystem(responseURL, this.finalDomainOutputPath); 
+                try{
+                    const responseBody = await response.body()
+                    await fse.outputFile(filePath,responseBody);
+                }catch(saveResponseError){
+                    // console.error(`Save response error for ${responseURL}`);
+                }
+            }
+            else if(responseURL.includes('data:application/octet-stream;')){
+                //Write out to file
+                const currentURL = this.currentJob?.url ?? 'Base64Encoded';
+                filePath = this.sanitizeURLForFileSystem(currentURL, this.finalDomainOutputPath); 
+                filePath = dirname(filePath);
+                filePath = _resolve(filePath, `Base64_Encoded_${this.currentBase64Index++}`);
+                try{
+                    const responseBody = await response.body()
+                    await fse.outputFile(filePath,responseBody);
+                }catch(saveResponseError){
+                    // console.error(`Save response error for ${responseURL}`);
+                }
+            } 
+        }
+    }
     async getPage() {
             let page: Page|null = null;
             const browser = await this.getBrowser()
@@ -262,11 +338,20 @@ export class Crawler {
 
             } catch(newPageError){
                 console.error('New Page Error:', newPageError);
-                throw newPageError
+                
             }
 
             if(page == null){
-                throw new Error('Cannot open newpage');
+                try {
+                    this.startBrowser();
+                    page = await browser.newPage();
+                    if(this.WebAssemblyEnabled){
+                        await page.addInitScript(preloadFile)
+                    }
+                } catch(startBrowserError){
+                    console.error(`Starting browser error`, startBrowserError);
+                    throw startBrowserError;
+                }
             }
             // await page.setViewportSize({
             //     width: 600,//1920,
@@ -297,39 +382,9 @@ export class Crawler {
                 });
               }
 
-            let currentBase64Index = 0;
-            page.on('response', async (response) => {
-                const responseStatus = response.status();
-                if (responseStatus === 200) {
-                    const responseURL = response.url();
-                    const currentURL = this.currentJob?.url;
-                    if(currentURL != null){
-                        if (!this.capturedRequests.get(currentURL)) {
-                            this.capturedRequests.set(currentURL,[]);
-                        }
-                        this.capturedRequests.get(currentURL)?.push(responseURL);
-                    }
-                    let filePath;
-                    if(responseURL.includes('data:')){
-                        //Write out to file
-                        const currentURL = this.currentJob?.url ?? 'Base64Encoded';
-                        filePath = this.sanitizeURLForFileSystem(currentURL, this.finalDomainOutputPath); 
-                        filePath = dirname(filePath);
-                        filePath = _resolve(filePath, `Base64_Encoded_${currentBase64Index++}`);
-
-                    } else {
-                        filePath = this.sanitizeURLForFileSystem(responseURL, this.finalDomainOutputPath); 
-                    }
-                    try{
-                        const responseBody = await response.body()
-                        await fse.outputFile(filePath,responseBody);
-                    }catch(saveResponseError){
-                        // console.error(`Save response error for ${responseURL}`);
-                    }
-                   
-                }
-            });
-
+            this.currentBase64Index = 0;
+            const shouldDownloadAllFiles = this.shouldDownloadAllFiles;
+            page.on('response', shouldDownloadAllFiles ? this.handleFileResponse : this.handleWebAssemblyResponseOnly);
             // page.setDefaultNavigationTimeout((TIME_TO_WAIT * 2) * 1000)
             return page;
     }
@@ -596,9 +651,6 @@ export class Crawler {
         const currentDepth: number = currentJob.depth;
         this.webAssemblyWorkers = [];
 
-        if (!pageURL.includes('http://') && !pageURL.includes('https://')) {
-            pageURL = "http://" + pageURL;
-        }
         console.log('Scanning ', pageURL, currentDepth)
 
         return new Promise(async (resolve, reject) => {
@@ -710,6 +762,14 @@ export class Crawler {
     }
 
     async startBrowser() {
+        if(this.browser != null){
+            try{
+                await this.browser.close();
+            } catch(closeError){
+                console.error(`Close error while starting, Couldn't close browser`, closeError);
+            }
+        }
+
         try{
             if(this.useFirefox){
                 this.browser = await firefox.launchPersistentContext(this.userDataDir,

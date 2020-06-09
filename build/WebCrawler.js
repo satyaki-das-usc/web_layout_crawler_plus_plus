@@ -97,7 +97,7 @@ var JS_OUTPUT_PATH = process.env.JS_OUTPUT_PATH || path_1.join(__dirname, config
 var SCREENSHOT_OUTPUT_PATH = process.env.SCREENSHOT_OUTPUT_PATH || path_1.join(__dirname, config_json_1.crawler_screenshot_path);
 var preloadFile = fs_1.readFileSync(path_1.join(__dirname, './small_injector.js'), 'utf8');
 var Crawler = /** @class */ (function () {
-    function Crawler(databaseConnector, domain) {
+    function Crawler(databaseConnector, domain, argv) {
         this.pagesToVisit = new Queue_1.Queue();
         this.userDataDir = uuidv1_1.default();
         this.finalDomainOutputPath = '';
@@ -109,12 +109,16 @@ var Crawler = /** @class */ (function () {
         this.useFirefox = false;
         this.pagesWithWebAssembly = new Set();
         this.insertedURLs = new Set();
+        this.currentBase64Index = 0;
         this.capturedRequests = new Map();
         this.capturedWebSocketRequests = new Map();
         this.browser = null;
         this.database = databaseConnector;
         this.domain = domain;
         this.scannedSubPages = new Set();
+        this.shouldDownloadAllFiles = argv.full;
+        this.handleFileResponse = this.handleFileResponse.bind(this);
+        this.handleWebAssemblyResponseOnly = this.handleWebAssemblyResponseOnly.bind(this);
     }
     Crawler.prototype.setLaunchOptions = function (browser, disableWebAssembly) {
         if (disableWebAssembly === void 0) { disableWebAssembly = false; }
@@ -254,9 +258,113 @@ var Crawler = /** @class */ (function () {
     /**
      * Gets a new page and adds instrumentation code and request capturing
      */
+    Crawler.prototype.handleFileResponse = function (response) {
+        var _a, _b, _c, _d;
+        return __awaiter(this, void 0, void 0, function () {
+            var responseStatus, responseURL, currentURL, filePath, currentURL_1, responseBody, saveResponseError_1;
+            return __generator(this, function (_e) {
+                switch (_e.label) {
+                    case 0:
+                        responseStatus = response.status();
+                        if (!(responseStatus === 200)) return [3 /*break*/, 5];
+                        responseURL = response.url();
+                        currentURL = (_a = this.currentJob) === null || _a === void 0 ? void 0 : _a.url;
+                        if (currentURL != null) {
+                            if (!this.capturedRequests.get(currentURL)) {
+                                this.capturedRequests.set(currentURL, []);
+                            }
+                            (_b = this.capturedRequests.get(currentURL)) === null || _b === void 0 ? void 0 : _b.push(responseURL);
+                        }
+                        filePath = void 0;
+                        if (responseURL.includes('data:')) {
+                            currentURL_1 = (_d = (_c = this.currentJob) === null || _c === void 0 ? void 0 : _c.url) !== null && _d !== void 0 ? _d : 'Base64Encoded';
+                            filePath = this.sanitizeURLForFileSystem(currentURL_1, this.finalDomainOutputPath);
+                            filePath = path_1.dirname(filePath);
+                            filePath = path_1.resolve(filePath, "Base64_Encoded_" + this.currentBase64Index++);
+                        }
+                        else {
+                            filePath = this.sanitizeURLForFileSystem(responseURL, this.finalDomainOutputPath);
+                        }
+                        _e.label = 1;
+                    case 1:
+                        _e.trys.push([1, 4, , 5]);
+                        return [4 /*yield*/, response.body()];
+                    case 2:
+                        responseBody = _e.sent();
+                        return [4 /*yield*/, fs_extra_1.default.outputFile(filePath, responseBody)];
+                    case 3:
+                        _e.sent();
+                        return [3 /*break*/, 5];
+                    case 4:
+                        saveResponseError_1 = _e.sent();
+                        return [3 /*break*/, 5];
+                    case 5: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    Crawler.prototype.handleWebAssemblyResponseOnly = function (response) {
+        var _a, _b, _c, _d;
+        return __awaiter(this, void 0, void 0, function () {
+            var responseStatus, responseURL, currentURL, filePath, responseBody, saveResponseError_2, currentURL_2, responseBody, saveResponseError_3;
+            return __generator(this, function (_e) {
+                switch (_e.label) {
+                    case 0:
+                        responseStatus = response.status();
+                        if (!(responseStatus === 200)) return [3 /*break*/, 11];
+                        responseURL = response.url();
+                        currentURL = (_a = this.currentJob) === null || _a === void 0 ? void 0 : _a.url;
+                        filePath = void 0;
+                        if (!(currentURL != null
+                            && (responseURL.endsWith('.wasm')
+                                || responseURL.endsWith('.wat')
+                                || responseURL.endsWith('.wast')))) return [3 /*break*/, 6];
+                        if (!this.capturedRequests.get(currentURL)) {
+                            this.capturedRequests.set(currentURL, []);
+                        }
+                        (_b = this.capturedRequests.get(currentURL)) === null || _b === void 0 ? void 0 : _b.push(responseURL);
+                        filePath = this.sanitizeURLForFileSystem(responseURL, this.finalDomainOutputPath);
+                        _e.label = 1;
+                    case 1:
+                        _e.trys.push([1, 4, , 5]);
+                        return [4 /*yield*/, response.body()];
+                    case 2:
+                        responseBody = _e.sent();
+                        return [4 /*yield*/, fs_extra_1.default.outputFile(filePath, responseBody)];
+                    case 3:
+                        _e.sent();
+                        return [3 /*break*/, 5];
+                    case 4:
+                        saveResponseError_2 = _e.sent();
+                        return [3 /*break*/, 5];
+                    case 5: return [3 /*break*/, 11];
+                    case 6:
+                        if (!responseURL.includes('data:application/octet-stream;')) return [3 /*break*/, 11];
+                        currentURL_2 = (_d = (_c = this.currentJob) === null || _c === void 0 ? void 0 : _c.url) !== null && _d !== void 0 ? _d : 'Base64Encoded';
+                        filePath = this.sanitizeURLForFileSystem(currentURL_2, this.finalDomainOutputPath);
+                        filePath = path_1.dirname(filePath);
+                        filePath = path_1.resolve(filePath, "Base64_Encoded_" + this.currentBase64Index++);
+                        _e.label = 7;
+                    case 7:
+                        _e.trys.push([7, 10, , 11]);
+                        return [4 /*yield*/, response.body()];
+                    case 8:
+                        responseBody = _e.sent();
+                        return [4 /*yield*/, fs_extra_1.default.outputFile(filePath, responseBody)];
+                    case 9:
+                        _e.sent();
+                        return [3 /*break*/, 11];
+                    case 10:
+                        saveResponseError_3 = _e.sent();
+                        return [3 /*break*/, 11];
+                    case 11: return [2 /*return*/];
+                }
+            });
+        });
+    };
     Crawler.prototype.getPage = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var page, browser, newPageError_1, currentBase64Index;
+            var page, browser, newPageError_1, startBrowserError_1, shouldDownloadAllFiles;
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
@@ -280,20 +388,36 @@ var Crawler = /** @class */ (function () {
                     case 6:
                         newPageError_1 = _a.sent();
                         console.error('New Page Error:', newPageError_1);
-                        throw newPageError_1;
+                        return [3 /*break*/, 7];
                     case 7:
-                        if (page == null) {
-                            throw new Error('Cannot open newpage');
-                        }
-                        // await page.setViewportSize({
-                        //     width: 600,//1920,
-                        //     height: 800//1080
-                        // });
-                        return [4 /*yield*/, page.setViewportSize({
-                                width: 640,
-                                height: 480,
-                            })];
+                        if (!(page == null)) return [3 /*break*/, 13];
+                        _a.label = 8;
                     case 8:
+                        _a.trys.push([8, 12, , 13]);
+                        this.startBrowser();
+                        return [4 /*yield*/, browser.newPage()];
+                    case 9:
+                        page = _a.sent();
+                        if (!this.WebAssemblyEnabled) return [3 /*break*/, 11];
+                        return [4 /*yield*/, page.addInitScript(preloadFile)];
+                    case 10:
+                        _a.sent();
+                        _a.label = 11;
+                    case 11: return [3 /*break*/, 13];
+                    case 12:
+                        startBrowserError_1 = _a.sent();
+                        console.error("Starting browser error", startBrowserError_1);
+                        throw startBrowserError_1;
+                    case 13: 
+                    // await page.setViewportSize({
+                    //     width: 600,//1920,
+                    //     height: 800//1080
+                    // });
+                    return [4 /*yield*/, page.setViewportSize({
+                            width: 640,
+                            height: 480,
+                        })];
+                    case 14:
                         // await page.setViewportSize({
                         //     width: 600,//1920,
                         //     height: 800//1080
@@ -332,50 +456,9 @@ var Crawler = /** @class */ (function () {
                                 });
                             }); });
                         }
-                        currentBase64Index = 0;
-                        page.on('response', function (response) { return __awaiter(_this, void 0, void 0, function () {
-                            var responseStatus, responseURL, currentURL, filePath, currentURL_1, responseBody, saveResponseError_1;
-                            var _a, _b, _c, _d;
-                            return __generator(this, function (_e) {
-                                switch (_e.label) {
-                                    case 0:
-                                        responseStatus = response.status();
-                                        if (!(responseStatus === 200)) return [3 /*break*/, 5];
-                                        responseURL = response.url();
-                                        currentURL = (_a = this.currentJob) === null || _a === void 0 ? void 0 : _a.url;
-                                        if (currentURL != null) {
-                                            if (!this.capturedRequests.get(currentURL)) {
-                                                this.capturedRequests.set(currentURL, []);
-                                            }
-                                            (_b = this.capturedRequests.get(currentURL)) === null || _b === void 0 ? void 0 : _b.push(responseURL);
-                                        }
-                                        filePath = void 0;
-                                        if (responseURL.includes('data:')) {
-                                            currentURL_1 = (_d = (_c = this.currentJob) === null || _c === void 0 ? void 0 : _c.url) !== null && _d !== void 0 ? _d : 'Base64Encoded';
-                                            filePath = this.sanitizeURLForFileSystem(currentURL_1, this.finalDomainOutputPath);
-                                            filePath = path_1.dirname(filePath);
-                                            filePath = path_1.resolve(filePath, "Base64_Encoded_" + currentBase64Index++);
-                                        }
-                                        else {
-                                            filePath = this.sanitizeURLForFileSystem(responseURL, this.finalDomainOutputPath);
-                                        }
-                                        _e.label = 1;
-                                    case 1:
-                                        _e.trys.push([1, 4, , 5]);
-                                        return [4 /*yield*/, response.body()];
-                                    case 2:
-                                        responseBody = _e.sent();
-                                        return [4 /*yield*/, fs_extra_1.default.outputFile(filePath, responseBody)];
-                                    case 3:
-                                        _e.sent();
-                                        return [3 /*break*/, 5];
-                                    case 4:
-                                        saveResponseError_1 = _e.sent();
-                                        return [3 /*break*/, 5];
-                                    case 5: return [2 /*return*/];
-                                }
-                            });
-                        }); });
+                        this.currentBase64Index = 0;
+                        shouldDownloadAllFiles = this.shouldDownloadAllFiles;
+                        page.on('response', shouldDownloadAllFiles ? this.handleFileResponse : this.handleWebAssemblyResponseOnly);
                         // page.setDefaultNavigationTimeout((TIME_TO_WAIT * 2) * 1000)
                         return [2 /*return*/, page];
                 }
@@ -1025,12 +1108,25 @@ var Crawler = /** @class */ (function () {
     };
     Crawler.prototype.startBrowser = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var _a, _b, launchError_1;
+            var closeError_1, _a, _b, launchError_1;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
-                        _c.trys.push([0, 5, , 6]);
-                        if (!this.useFirefox) return [3 /*break*/, 2];
+                        if (!(this.browser != null)) return [3 /*break*/, 4];
+                        _c.label = 1;
+                    case 1:
+                        _c.trys.push([1, 3, , 4]);
+                        return [4 /*yield*/, this.browser.close()];
+                    case 2:
+                        _c.sent();
+                        return [3 /*break*/, 4];
+                    case 3:
+                        closeError_1 = _c.sent();
+                        console.error("Close error while starting, Couldn't close browser", closeError_1);
+                        return [3 /*break*/, 4];
+                    case 4:
+                        _c.trys.push([4, 9, , 10]);
+                        if (!this.useFirefox) return [3 /*break*/, 6];
                         _a = this;
                         return [4 /*yield*/, firefox.launchPersistentContext(this.userDataDir, {
                                 // userPrefs: !this.WebAssemblyEnabled  ?  {
@@ -1040,10 +1136,10 @@ var Crawler = /** @class */ (function () {
                                 // dumpio: false,//!PROD,
                                 headless: HEADLESS_BROWSER
                             })];
-                    case 1:
+                    case 5:
                         _a.browser = _c.sent();
-                        return [3 /*break*/, 4];
-                    case 2:
+                        return [3 /*break*/, 8];
+                    case 6:
                         _b = this;
                         return [4 /*yield*/, chromium.launchPersistentContext(this.userDataDir, {
                                 // userDataDir: ,
@@ -1054,15 +1150,15 @@ var Crawler = /** @class */ (function () {
                                 // dumpio: false,//!PROD,
                                 headless: HEADLESS_BROWSER
                             })];
-                    case 3:
+                    case 7:
                         _b.browser = _c.sent();
-                        _c.label = 4;
-                    case 4: return [3 /*break*/, 6];
-                    case 5:
+                        _c.label = 8;
+                    case 8: return [3 /*break*/, 10];
+                    case 9:
                         launchError_1 = _c.sent();
                         console.error('Launch Error', launchError_1);
-                        return [3 /*break*/, 6];
-                    case 6: return [2 /*return*/];
+                        return [3 /*break*/, 10];
+                    case 10: return [2 /*return*/];
                 }
             });
         });

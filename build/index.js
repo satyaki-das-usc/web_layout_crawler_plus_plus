@@ -52,38 +52,39 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var MySQLConnector_1 = require("./MySQLConnector");
 var WebCrawler_1 = require("./WebCrawler");
-var uuidv1_1 = __importDefault(require("uuidv1"));
-var userDataDir = uuidv1_1.default();
+var fs_1 = __importDefault(require("fs"));
+var util_1 = __importDefault(require("util"));
+var readFile = util_1.default.promisify(fs_1.default.readFile);
 var argv = require('yargs')
     .option('url', {
     alias: 'u',
     type: 'string',
     description: 'URL to scan',
-    demandOption: true //Disable if implementing getNextSite() function
+})
+    .option('file', {
+    alias: 'f',
+    type: 'string',
+    description: 'File path of text file (CSV) containing list of websites to scan',
+})
+    .option('full', {
+    alias: 'l',
+    type: 'boolean',
+    default: false,
+    description: 'Set true to download all of the files on a web page when visited with the crawler',
 })
     .argv;
 var PROD = process.env.NODE_ENV === 'production' ? true : false;
 var URL_TO_SCAN = process.env.URL_TO_SCAN;
-//Not implemented in DB, Can be replaced manually
-function getNextSite(db) {
+function readUrlList(filepath) {
     return __awaiter(this, void 0, void 0, function () {
-        var sqlString, siteResult, e_1;
+        var fileContents, sitesList;
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0:
-                    sqlString = "CALL getNextSite();";
-                    _a.label = 1;
+                case 0: return [4 /*yield*/, readFile(filepath, { encoding: 'utf8' })];
                 case 1:
-                    _a.trys.push([1, 3, , 4]);
-                    return [4 /*yield*/, db.query(sqlString, [])];
-                case 2:
-                    siteResult = _a.sent();
-                    return [2 /*return*/, siteResult[1][0].Domain]; // Indexes caused by stored procedure rows
-                case 3:
-                    e_1 = _a.sent();
-                    console.error(e_1);
-                    return [2 /*return*/, null];
-                case 4: return [2 /*return*/];
+                    fileContents = _a.sent();
+                    sitesList = fileContents.split('\n').filter(function (line) { return line.includes('http') || line.includes('.'); });
+                    return [2 /*return*/, sitesList];
             }
         });
     });
@@ -99,61 +100,103 @@ function waitFor(seconds) {
         });
     });
 }
+function crawlSite(urlToScan, database) {
+    return __awaiter(this, void 0, void 0, function () {
+        var crawler, _a, _b, browser, e_1_1;
+        var e_1, _c;
+        return __generator(this, function (_d) {
+            switch (_d.label) {
+                case 0:
+                    crawler = new WebCrawler_1.Crawler(database, urlToScan, argv);
+                    _d.label = 1;
+                case 1:
+                    _d.trys.push([1, 7, 8, 9]);
+                    _a = __values(['chrome', 'firefox']), _b = _a.next();
+                    _d.label = 2;
+                case 2:
+                    if (!!_b.done) return [3 /*break*/, 6];
+                    browser = _b.value;
+                    console.log("Scanning with " + browser + ": WebAssembly Enabled");
+                    return [4 /*yield*/, crawler.scanPages(browser)];
+                case 3:
+                    _d.sent();
+                    console.log("Scanning with " + browser + ": WebAssembly Disabled");
+                    return [4 /*yield*/, crawler.screenshotPagesWithWebAssemblyDisabled(browser)];
+                case 4:
+                    _d.sent();
+                    _d.label = 5;
+                case 5:
+                    _b = _a.next();
+                    return [3 /*break*/, 2];
+                case 6: return [3 /*break*/, 9];
+                case 7:
+                    e_1_1 = _d.sent();
+                    e_1 = { error: e_1_1 };
+                    return [3 /*break*/, 9];
+                case 8:
+                    try {
+                        if (_b && !_b.done && (_c = _a.return)) _c.call(_a);
+                    }
+                    finally { if (e_1) throw e_1.error; }
+                    return [7 /*endfinally*/];
+                case 9: return [2 /*return*/];
+            }
+        });
+    });
+}
 function main() {
     var _a;
     return __awaiter(this, void 0, void 0, function () {
-        var randomNumber, db, urlToScan, db_1, crawler, _b, _c, browser, e_2_1;
-        var e_2, _d;
-        return __generator(this, function (_e) {
-            switch (_e.label) {
+        var db, sitesToScan, sitesToScan_1, sitesToScan_1_1, urlToScan, e_2_1, urlToScan;
+        var e_2, _b;
+        return __generator(this, function (_c) {
+            switch (_c.label) {
                 case 0:
-                    randomNumber = Math.floor(Math.random() * 10);
-                    return [4 /*yield*/, waitFor(randomNumber * 1000)];
-                case 1:
-                    _e.sent();
                     db = new MySQLConnector_1.MySQLConnector();
-                    if (!(argv.url != null || URL_TO_SCAN != null)) return [3 /*break*/, 11];
-                    urlToScan = (_a = URL_TO_SCAN !== null && URL_TO_SCAN !== void 0 ? URL_TO_SCAN : argv.url) !== null && _a !== void 0 ? _a : '';
-                    if (!(urlToScan !== '')) return [3 /*break*/, 11];
-                    db_1 = new MySQLConnector_1.MySQLConnector();
-                    crawler = new WebCrawler_1.Crawler(db_1, urlToScan);
-                    _e.label = 2;
+                    if (!(argv.file != null)) return [3 /*break*/, 10];
+                    return [4 /*yield*/, readUrlList(argv.file)];
+                case 1:
+                    sitesToScan = _c.sent();
+                    _c.label = 2;
                 case 2:
-                    _e.trys.push([2, 8, 9, 10]);
-                    _b = __values(['chrome', 'firefox']), _c = _b.next();
-                    _e.label = 3;
+                    _c.trys.push([2, 7, 8, 9]);
+                    sitesToScan_1 = __values(sitesToScan), sitesToScan_1_1 = sitesToScan_1.next();
+                    _c.label = 3;
                 case 3:
-                    if (!!_c.done) return [3 /*break*/, 7];
-                    browser = _c.value;
-                    console.log("Scanning with " + browser + ": WebAssembly Enabled");
-                    return [4 /*yield*/, crawler.scanPages(browser)];
+                    if (!!sitesToScan_1_1.done) return [3 /*break*/, 6];
+                    urlToScan = sitesToScan_1_1.value;
+                    console.log("" + urlToScan);
+                    return [4 /*yield*/, crawlSite(urlToScan, db)];
                 case 4:
-                    _e.sent();
-                    console.log("Scanning with " + browser + ": WebAssembly Disabled");
-                    return [4 /*yield*/, crawler.screenshotPagesWithWebAssemblyDisabled(browser)];
+                    _c.sent();
+                    _c.label = 5;
                 case 5:
-                    _e.sent();
-                    _e.label = 6;
-                case 6:
-                    _c = _b.next();
+                    sitesToScan_1_1 = sitesToScan_1.next();
                     return [3 /*break*/, 3];
-                case 7: return [3 /*break*/, 10];
-                case 8:
-                    e_2_1 = _e.sent();
+                case 6: return [3 /*break*/, 9];
+                case 7:
+                    e_2_1 = _c.sent();
                     e_2 = { error: e_2_1 };
-                    return [3 /*break*/, 10];
-                case 9:
+                    return [3 /*break*/, 9];
+                case 8:
                     try {
-                        if (_c && !_c.done && (_d = _b.return)) _d.call(_b);
+                        if (sitesToScan_1_1 && !sitesToScan_1_1.done && (_b = sitesToScan_1.return)) _b.call(sitesToScan_1);
                     }
                     finally { if (e_2) throw e_2.error; }
                     return [7 /*endfinally*/];
-                case 10:
-                    db_1.close();
-                    _e.label = 11;
-                case 11:
+                case 9:
                     db.close();
-                    return [2 /*return*/];
+                    return [3 /*break*/, 12];
+                case 10:
+                    if (!(argv.url != null || URL_TO_SCAN != null)) return [3 /*break*/, 12];
+                    urlToScan = (_a = URL_TO_SCAN !== null && URL_TO_SCAN !== void 0 ? URL_TO_SCAN : argv.url) !== null && _a !== void 0 ? _a : '';
+                    if (!(urlToScan !== '')) return [3 /*break*/, 12];
+                    return [4 /*yield*/, crawlSite(urlToScan, db)];
+                case 11:
+                    _c.sent();
+                    db.close();
+                    _c.label = 12;
+                case 12: return [2 /*return*/];
             }
         });
     });
