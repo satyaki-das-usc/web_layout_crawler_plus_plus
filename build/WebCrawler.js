@@ -60,14 +60,16 @@ var readdir = util_1.promisify(fs_1.readdir);
 var mkdir = util_1.promisify(fs_1.mkdir);
 var stat = util_1.promisify(fs_1.stat);
 var rmdir = util_1.promisify(fs_1.rmdir);
+var exists = util_1.promisify(fs_1.exists);
 var URL = require('url').URL;
 var fs_extra_1 = __importDefault(require("fs-extra")); // v 5.0.0
 var sanitize_filename_1 = __importDefault(require("sanitize-filename"));
 var playwright_1 = __importDefault(require("playwright"));
 var chromium = playwright_1.default.chromium, firefox = playwright_1.default.firefox;
+var hasha_1 = __importDefault(require("hasha"));
 var path_1 = require("path");
 var Queue_1 = require("./Queue");
-var uuidv1_1 = __importDefault(require("uuidv1"));
+var uuidv1 = require('uuidv1');
 var config_json_1 = require("./config.json");
 var SubURLScanMode;
 (function (SubURLScanMode) {
@@ -99,7 +101,7 @@ var preloadFile = fs_1.readFileSync(path_1.join(__dirname, './small_injector.js'
 var Crawler = /** @class */ (function () {
     function Crawler(databaseConnector, domain, argv) {
         this.pagesToVisit = new Queue_1.Queue();
-        this.userDataDir = uuidv1_1.default();
+        this.userDataDir = uuidv1();
         this.finalDomainOutputPath = '';
         this.screenshotOutputPath = '';
         this.webAssemblyWorkers = [];
@@ -110,6 +112,7 @@ var Crawler = /** @class */ (function () {
         this.pagesWithWebAssembly = new Set();
         this.insertedURLs = new Set();
         this.currentBase64Index = 0;
+        this.alwaysScreenshot = false;
         this.capturedRequests = new Map();
         this.capturedWebSocketRequests = new Map();
         this.browser = null;
@@ -143,6 +146,16 @@ var Crawler = /** @class */ (function () {
         else {
             this.userDataDir = CommonUtilities_1.makeChromeProfile();
         }
+    };
+    Crawler.prototype.hashBuffer = function (buffer) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, hasha_1.default.async(buffer, { algorithm: 'sha256' })];
+                    case 1: return [2 /*return*/, _a.sent()];
+                }
+            });
+        });
     };
     Crawler.prototype.getFiles = function (dir) {
         return __awaiter(this, void 0, void 0, function () {
@@ -387,37 +400,67 @@ var Crawler = /** @class */ (function () {
                     case 5: return [3 /*break*/, 7];
                     case 6:
                         newPageError_1 = _a.sent();
-                        console.error('New Page Error:', newPageError_1);
                         return [3 /*break*/, 7];
                     case 7:
-                        if (!(page == null)) return [3 /*break*/, 13];
+                        if (!(page == null)) return [3 /*break*/, 14];
                         _a.label = 8;
                     case 8:
-                        _a.trys.push([8, 12, , 13]);
-                        this.startBrowser();
-                        return [4 /*yield*/, browser.newPage()];
+                        _a.trys.push([8, 13, , 14]);
+                        return [4 /*yield*/, this.startBrowser()];
                     case 9:
-                        page = _a.sent();
-                        if (!this.WebAssemblyEnabled) return [3 /*break*/, 11];
-                        return [4 /*yield*/, page.addInitScript(preloadFile)];
-                    case 10:
                         _a.sent();
-                        _a.label = 11;
-                    case 11: return [3 /*break*/, 13];
-                    case 12:
+                        return [4 /*yield*/, browser.newPage()];
+                    case 10:
+                        page = _a.sent();
+                        if (!this.WebAssemblyEnabled) return [3 /*break*/, 12];
+                        return [4 /*yield*/, page.addInitScript(preloadFile)];
+                    case 11:
+                        _a.sent();
+                        _a.label = 12;
+                    case 12: return [3 /*break*/, 14];
+                    case 13:
                         startBrowserError_1 = _a.sent();
                         console.error("Starting browser error", startBrowserError_1);
                         throw startBrowserError_1;
-                    case 13: 
-                    // await page.setViewportSize({
-                    //     width: 600,//1920,
-                    //     height: 800//1080
-                    // });
-                    return [4 /*yield*/, page.setViewportSize({
-                            width: 640,
-                            height: 480,
-                        })];
-                    case 14:
+                    case 14: return [4 /*yield*/, page.exposeFunction('saveWasmBuffer', function (stringBuffer) { return __awaiter(_this, void 0, void 0, function () {
+                            var str2ab, wasmBuffer, bufferHashString;
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0:
+                                        str2ab = function _str2ab(str) {
+                                            var buf = new ArrayBuffer(str.length); // 1 byte for each char
+                                            var bufView = new Uint8Array(buf);
+                                            for (var i = 0, strLen = str.length; i < strLen; i++) {
+                                                bufView[i] = str.charCodeAt(i);
+                                            }
+                                            return Buffer.from(buf);
+                                        };
+                                        this.containsWebAssembly = true;
+                                        if (this.currentJob) {
+                                            this.pagesWithWebAssembly.add(this.currentJob.url);
+                                        }
+                                        wasmBuffer = str2ab(stringBuffer);
+                                        return [4 /*yield*/, this.hashBuffer(wasmBuffer)];
+                                    case 1:
+                                        bufferHashString = _a.sent();
+                                        return [4 /*yield*/, fs_extra_1.default.outputFile(path_1.resolve(this.finalDomainOutputPath, bufferHashString + ".wasm"), wasmBuffer)];
+                                    case 2:
+                                        _a.sent();
+                                        return [2 /*return*/];
+                                }
+                            });
+                        }); })];
+                    case 15:
+                        _a.sent();
+                        // await page.setViewportSize({
+                        //     width: 600,//1920,
+                        //     height: 800//1080
+                        // });
+                        return [4 /*yield*/, page.setViewportSize({
+                                width: 640,
+                                height: 480,
+                            })];
+                    case 16:
                         // await page.setViewportSize({
                         //     width: 600,//1920,
                         //     height: 800//1080
@@ -459,7 +502,7 @@ var Crawler = /** @class */ (function () {
                         this.currentBase64Index = 0;
                         shouldDownloadAllFiles = this.shouldDownloadAllFiles;
                         page.on('response', shouldDownloadAllFiles ? this.handleFileResponse : this.handleWebAssemblyResponseOnly);
-                        // page.setDefaultNavigationTimeout((TIME_TO_WAIT * 2) * 1000)
+                        page.setDefaultNavigationTimeout(0);
                         return [2 /*return*/, page];
                 }
             });
@@ -515,6 +558,7 @@ var Crawler = /** @class */ (function () {
                         if (!!_c.done) return [3 /*break*/, 9];
                         url = _c.value;
                         job = new Queue_1.QueueJob(url, this.domain, 0);
+                        this.currentJob = job;
                         this.capturedRequests.clear();
                         this.capturedWebSocketRequests.clear();
                         _f.label = 4;
@@ -568,10 +612,6 @@ var Crawler = /** @class */ (function () {
                     case 16: return [4 /*yield*/, (_f.sent())];
                     case 17:
                         scanResults = _f.sent();
-                        this.containsWebAssembly = this.containsWebAssembly || scanResults.containsWebAssembly;
-                        if (scanResults.containsWebAssembly) {
-                            this.pagesWithWebAssembly.add(currentURL);
-                        }
                         return [3 /*break*/, 20];
                     case 18:
                         e_4 = _f.sent();
@@ -638,7 +678,8 @@ var Crawler = /** @class */ (function () {
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0: return [4 /*yield*/, page.screenshot({
-                            type: 'png',
+                            type: 'jpeg',
+                            quality: 80,
                             fullPage: true
                         })];
                     case 1:
@@ -817,7 +858,6 @@ var Crawler = /** @class */ (function () {
                         return [3 /*break*/, 11];
                     case 10:
                         workerHandlerError_1 = _d.sent();
-                        console.error(workerHandlerError_1);
                         return [3 /*break*/, 11];
                     case 11:
                         _b = _a.next();
@@ -899,9 +939,6 @@ var Crawler = /** @class */ (function () {
         var pageURL = "" + currentJob.url;
         var currentDepth = currentJob.depth;
         this.webAssemblyWorkers = [];
-        if (!pageURL.includes('http://') && !pageURL.includes('https://')) {
-            pageURL = "http://" + pageURL;
-        }
         console.log('Scanning ', pageURL, currentDepth);
         return new Promise(function (resolve, reject) { return __awaiter(_this, void 0, void 0, function () {
             var crawlResults, page, timeout, browserErr_1, instrumentationRecords, requestsForPage, takeScreenshotError_1, err_2;
@@ -935,24 +972,35 @@ var Crawler = /** @class */ (function () {
                         }, (TIME_TO_WAIT * 5) * 1000);
                         _a.label = 5;
                     case 5:
-                        _a.trys.push([5, 18, 19, 20]);
+                        _a.trys.push([5, 23, , 24]);
                         return [4 /*yield*/, page.goto(pageURL, {
-                                waitUntil: 'load'
+                            // waitUntil: 'load'
                             })];
                     case 6:
                         _a.sent();
-                        if (!this.currentJob) return [3 /*break*/, 8];
-                        return [4 /*yield*/, this.handleSubURLScan(page, this.currentJob)];
+                        if (!this.currentJob) return [3 /*break*/, 10];
+                        _a.label = 7;
                     case 7:
+                        _a.trys.push([7, , 9, 10]);
+                        return [4 /*yield*/, this.handleSubURLScan(page, this.currentJob)];
+                    case 8:
                         _a.sent();
-                        _a.label = 8;
-                    case 8: return [4 /*yield*/, page.waitForTimeout(TIME_TO_WAIT * 1000)];
-                    case 9:
+                        return [3 /*break*/, 10];
+                    case 9: return [7 /*endfinally*/];
+                    case 10: return [4 /*yield*/, page.waitForTimeout(TIME_TO_WAIT * 1000)];
+                    case 11:
                         _a.sent();
                         return [4 /*yield*/, this.collectInstrumentationRecordsFromPage(page)];
-                    case 10:
+                    case 12:
                         instrumentationRecords = _a.sent();
-                        if (!instrumentationRecords.altered) return [3 /*break*/, 16];
+                        clearTimeout(timeout);
+                        if (!this.alwaysScreenshot) return [3 /*break*/, 14];
+                        return [4 /*yield*/, this.takeScreenshot(page)];
+                    case 13:
+                        _a.sent();
+                        _a.label = 14;
+                    case 14:
+                        if (!instrumentationRecords.altered) return [3 /*break*/, 21];
                         console.log('*'.repeat(10) + " Found a WebAssembly module! " + '*'.repeat(10));
                         requestsForPage = this.capturedRequests.get(pageURL);
                         crawlResults = {
@@ -962,40 +1010,70 @@ var Crawler = /** @class */ (function () {
                             capturedRequests: requestsForPage,
                             intrumentationRecords: instrumentationRecords
                         };
-                        _a.label = 11;
-                    case 11:
-                        _a.trys.push([11, 15, , 16]);
-                        return [4 /*yield*/, this.takeScreenshot(page)];
-                    case 12:
-                        _a.sent();
-                        if (!!this.insertedURLs.has(pageURL)) return [3 /*break*/, 14];
-                        return [4 /*yield*/, this.insertInstantiateIntoDatabase("" + pageURL, this.domain, instrumentationRecords, currentJob.parent)];
-                    case 13:
-                        _a.sent();
-                        _a.label = 14;
-                    case 14: return [3 /*break*/, 16];
+                        this.containsWebAssembly = true;
+                        this.pagesWithWebAssembly.add(pageURL);
+                        _a.label = 15;
                     case 15:
+                        _a.trys.push([15, 20, , 21]);
+                        if (!!this.alwaysScreenshot) return [3 /*break*/, 17];
+                        return [4 /*yield*/, this.takeScreenshot(page)];
+                    case 16:
+                        _a.sent();
+                        _a.label = 17;
+                    case 17:
+                        if (!!this.insertedURLs.has(pageURL)) return [3 /*break*/, 19];
+                        return [4 /*yield*/, this.insertInstantiateIntoDatabase("" + pageURL, this.domain, instrumentationRecords, currentJob.parent)];
+                    case 18:
+                        _a.sent();
+                        _a.label = 19;
+                    case 19: return [3 /*break*/, 21];
+                    case 20:
                         takeScreenshotError_1 = _a.sent();
                         console.log(takeScreenshotError_1);
-                        return [3 /*break*/, 16];
-                    case 16: return [4 /*yield*/, page.close()];
-                    case 17:
+                        return [3 /*break*/, 21];
+                    case 21: return [4 /*yield*/, this.closePage(page)];
+                    case 22:
                         _a.sent();
-                        return [3 /*break*/, 20];
-                    case 18:
+                        return [3 /*break*/, 24];
+                    case 23:
                         err_2 = _a.sent();
-                        console.error('Navigation Error:', err_2);
+                        clearTimeout(timeout);
                         reject(err_2);
                         return [2 /*return*/];
-                    case 19:
-                        clearTimeout(timeout);
-                        return [7 /*endfinally*/];
-                    case 20:
+                    case 24:
                         resolve(crawlResults);
                         return [2 /*return*/];
                 }
             });
         }); });
+    };
+    Crawler.prototype.closePage = function (page) {
+        return __awaiter(this, void 0, void 0, function () {
+            var _this = this;
+            return __generator(this, function (_a) {
+                return [2 /*return*/, new Promise(function (resolve, reject) {
+                        var closeTimeout = setTimeout(function () { return __awaiter(_this, void 0, void 0, function () {
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0: return [4 /*yield*/, this.closeBrowser()];
+                                    case 1:
+                                        _a.sent();
+                                        return [4 /*yield*/, this.startBrowser()];
+                                    case 2:
+                                        _a.sent();
+                                        resolve();
+                                        return [2 /*return*/];
+                                }
+                            });
+                        }); }, 2 * 1000);
+                        return page.close()
+                            .then(function () {
+                            clearTimeout(closeTimeout);
+                            resolve();
+                        });
+                    })];
+            });
+        });
     };
     Crawler.prototype.screenshotPageOnly = function (url) {
         return __awaiter(this, void 0, void 0, function () {
@@ -1034,9 +1112,12 @@ var Crawler = /** @class */ (function () {
             });
         });
     };
+    Crawler.prototype.setAlwaysScreenshot = function () {
+        this.alwaysScreenshot = true;
+    };
     Crawler.prototype.screenshotPagesWithWebAssemblyDisabled = function (browser) {
         return __awaiter(this, void 0, void 0, function () {
-            var pagesToScreenshot, pagesToScreenshot_1, pagesToScreenshot_1_1, url, screenshotOnlyError_1, e_7_1;
+            var pagesToScreenshot, pagesToScreenshot_1, pagesToScreenshot_1_1, url, job, screenshotOnlyError_1, e_7_1;
             var e_7, _a;
             return __generator(this, function (_b) {
                 switch (_b.label) {
@@ -1054,6 +1135,8 @@ var Crawler = /** @class */ (function () {
                     case 3:
                         if (!!pagesToScreenshot_1_1.done) return [3 /*break*/, 8];
                         url = pagesToScreenshot_1_1.value;
+                        job = new Queue_1.QueueJob(url, this.domain, 0);
+                        this.currentJob = job;
                         _b.label = 4;
                     case 4:
                         _b.trys.push([4, 6, , 7]);
@@ -1171,6 +1254,7 @@ var Crawler = /** @class */ (function () {
                     case 0: return [4 /*yield*/, this.getBrowser()];
                     case 1:
                         browser = _a.sent();
+                        this.browser = null;
                         if (!(browser != null)) return [3 /*break*/, 5];
                         _a.label = 2;
                     case 2:

@@ -45,6 +45,22 @@ self.WebAssemblyCallsFound = {
     }
 }
 
+function __arrayBufferToString(buffer){ // Convert an ArrayBuffer to an UTF-8 String
+
+    var bufView = new Uint8Array(buffer);
+    var length = bufView.length;
+    var result = '';
+    var addition = Math.pow(2,8)-1;
+
+    for(var i = 0;i<length;i+=addition){
+        if(i + addition > length){
+            addition = length - i;
+        }
+        result += String.fromCharCode.apply(null, bufView.subarray(i,i+addition));
+    }
+    return result;
+}
+
 /* Replacing WebAssembly methods with instrumented versions */
 var __ogWaI = WebAssembly.instantiate;
 var __ogWaIS = WebAssembly.instantiateStreaming;
@@ -53,15 +69,24 @@ WebAssembly.instantiate = function (buff, imp) {
     self.WebAssemblyCallsFound.altered = true;
     const stackLocation = new Error().stack;
     let itemToDigestForHash;
+    let promiseToWait;
     if (buff instanceof WebAssembly.Module) {
         //buff is a Module, so cannot use Wabt or generate hash string
         const encoder = new TextEncoder();
         itemToDigestForHash = encoder.encode(buff.toString());
+        promiseToWait = () => Promise.resolve();
     } else {
+        if(self.saveWasmBuffer){
+            var bufstring = __arrayBufferToString(arrayBuffer);
+            promiseToWait = () => self.saveWasmBuffer(bufstring);
+        } else {
+            promiseToWait = () => Promise.resolve();
+        }
         itemToDigestForHash = buff;
     }
     //Get the hash of the Wasm file for logging
-    return crypto.subtle.digest('SHA-256', itemToDigestForHash)
+    return promiseToWait()
+    .then(crypto.subtle.digest('SHA-256', itemToDigestForHash))
         .then(wasmHash => {
             //Get the hash as a hex string
             const wasmHashString = Array.from(new Uint8Array(wasmHash)).map(b => b.toString(16).padStart(2, '0')).join('');
@@ -194,7 +219,16 @@ WebAssembly.instantiateStreaming = function (source, imp) {
     return responsePromise.then(sourceResponse => {
         return sourceResponse.arrayBuffer()
             .then(arrayBuffer => {
-                return crypto.subtle.digest('SHA-256', arrayBuffer)
+                let promiseToWait;
+                if(self.saveWasmBuffer){
+                    var bufstring = __arrayBufferToString(arrayBuffer);
+                    promiseToWait = () => self.saveWasmBuffer(bufstring);
+                } else {
+                    promiseToWait = () => Promise.resolve();
+                }
+                return promiseToWait()
+                .then(() => {
+                    crypto.subtle.digest('SHA-256', arrayBuffer)
                     .then(wasmHash => {
                         const wasmHashString = Array.from(new Uint8Array(wasmHash)).map(b => b.toString(16).padStart(2, '0')).join('');
                         self.WebAssemblyCallsFound.addWasmFileReference(wasmHashString);
@@ -204,6 +238,8 @@ WebAssembly.instantiateStreaming = function (source, imp) {
 
 
                     })
+                })
+
             });
     });
 

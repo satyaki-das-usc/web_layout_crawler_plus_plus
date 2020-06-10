@@ -83,7 +83,8 @@ function readUrlList(filepath) {
                 case 0: return [4 /*yield*/, readFile(filepath, { encoding: 'utf8' })];
                 case 1:
                     fileContents = _a.sent();
-                    sitesList = fileContents.split('\n').filter(function (line) { return line.includes('http') || line.includes('.'); });
+                    sitesList = fileContents.split('\n')
+                        .map(function (line) { return line.trim(); });
                     return [2 /*return*/, sitesList];
             }
         });
@@ -102,12 +103,16 @@ function waitFor(seconds) {
 }
 function crawlSite(urlToScan, database) {
     return __awaiter(this, void 0, void 0, function () {
-        var crawler, _a, _b, browser, e_1_1;
+        var pageURL, crawler, _a, _b, browser, e_1_1;
         var e_1, _c;
         return __generator(this, function (_d) {
             switch (_d.label) {
                 case 0:
-                    crawler = new WebCrawler_1.Crawler(database, urlToScan, argv);
+                    pageURL = urlToScan;
+                    if (!pageURL.includes('http://') && !pageURL.includes('https://')) {
+                        pageURL = "http://" + pageURL;
+                    }
+                    crawler = new WebCrawler_1.Crawler(database, pageURL, argv);
                     _d.label = 1;
                 case 1:
                     _d.trys.push([1, 7, 8, 9]);
@@ -120,6 +125,7 @@ function crawlSite(urlToScan, database) {
                     return [4 /*yield*/, crawler.scanPages(browser)];
                 case 3:
                     _d.sent();
+                    crawler.setAlwaysScreenshot();
                     console.log("Scanning with " + browser + ": WebAssembly Disabled");
                     return [4 /*yield*/, crawler.screenshotPagesWithWebAssemblyDisabled(browser)];
                 case 4:
