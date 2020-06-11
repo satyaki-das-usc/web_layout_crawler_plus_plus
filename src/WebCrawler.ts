@@ -700,7 +700,7 @@ export class Crawler {
 
             try {
                 await page.goto(pageURL, {
-                    // waitUntil: 'load'
+                    waitUntil: 'load'
                 });
 
                 // await this.scrollToBottom(page);

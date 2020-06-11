@@ -974,7 +974,7 @@ var Crawler = /** @class */ (function () {
                     case 5:
                         _a.trys.push([5, 23, , 24]);
                         return [4 /*yield*/, page.goto(pageURL, {
-                            // waitUntil: 'load'
+                                waitUntil: 'load'
                             })];
                     case 6:
                         _a.sent();
