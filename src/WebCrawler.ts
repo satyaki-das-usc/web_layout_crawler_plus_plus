@@ -709,7 +709,7 @@ export class Crawler {
                         await this.handleSubURLScan(page, this.currentJob)
                     }
                     finally {
-                        
+
                     }
 
                 }
@@ -791,8 +791,7 @@ export class Crawler {
             // await this.scrollToTop(page);
             await this.takeScreenshot(page);
 
-            await page.close();
-
+            await this.closePage(page);
         } catch (browserErr) {
             throw browserErr
         }

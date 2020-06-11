@@ -1100,7 +1100,7 @@ var Crawler = /** @class */ (function () {
                     case 4:
                         // await this.scrollToTop(page);
                         _a.sent();
-                        return [4 /*yield*/, page.close()];
+                        return [4 /*yield*/, this.closePage(page)];
                     case 5:
                         _a.sent();
                         return [3 /*break*/, 7];

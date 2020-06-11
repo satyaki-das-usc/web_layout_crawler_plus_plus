@@ -5,7 +5,7 @@
     "mysql_database": "web_layout_crawler",
     "mysql_port": 3306,
     "max_crawl_depth_level": 1,
-    "time_to_wait_on_page": 8,
+    "time_to_wait_on_page": 12,
     "suburl_scan_mode": "full",
     "chromium_path": "../chromium/chrome",
     "crawler_js_dump_path": "../JSOutput",
