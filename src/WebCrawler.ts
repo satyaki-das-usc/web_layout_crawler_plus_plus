@@ -500,11 +500,10 @@ export class Crawler {
     async takeScreenshot(page: Page){
         //First attempt full-page screenshot
         let screenshotBuffer: Buffer | null = null;
-        const imageType = 'png';
+        const imageType = 'jpeg';
         try{
             screenshotBuffer = await page.screenshot({
                 type: imageType,
-                // quality: 80,
                 fullPage: true,
             });
         } catch(screenshotError){
@@ -512,13 +511,12 @@ export class Crawler {
         }
         
         if(screenshotBuffer == null){
-            await this.wait(2)
+            await this.wait(3)
 
             try{
                 screenshotBuffer = await page.screenshot({
                     type: imageType,
                     fullPage: false,
-                    // quality: 80,
                 });
             } catch(fallbackScreenshotError){
                 console.error(chalk.yellow(`Couldn't take viewport screenshot.`))

@@ -680,13 +680,12 @@ var Crawler = /** @class */ (function () {
                 switch (_c.label) {
                     case 0:
                         screenshotBuffer = null;
-                        imageType = 'png';
+                        imageType = 'jpeg';
                         _c.label = 1;
                     case 1:
                         _c.trys.push([1, 3, , 4]);
                         return [4 /*yield*/, page.screenshot({
                                 type: imageType,
-                                // quality: 80,
                                 fullPage: true,
                             })];
                     case 2:
@@ -698,7 +697,7 @@ var Crawler = /** @class */ (function () {
                         return [3 /*break*/, 4];
                     case 4:
                         if (!(screenshotBuffer == null)) return [3 /*break*/, 9];
-                        return [4 /*yield*/, this.wait(2)];
+                        return [4 /*yield*/, this.wait(3)];
                     case 5:
                         _c.sent();
                         _c.label = 6;
