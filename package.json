@@ -16,6 +16,7 @@
   "license": "ISC",
   "dependencies": {
     "@types/uuid": "^8.0.0",
+    "chalk": "^4.1.0",
     "fs-extra": "^8.1.0",
     "hasha": "^5.2.0",
     "is-docker": "^2.0.0",

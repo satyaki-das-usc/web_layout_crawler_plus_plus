@@ -64,16 +64,16 @@ function __arrayBufferToString(buffer){ // Convert an ArrayBuffer to an UTF-8 St
 /* Replacing WebAssembly methods with instrumented versions */
 var __ogWaI = WebAssembly.instantiate;
 var __ogWaIS = WebAssembly.instantiateStreaming;
-WebAssembly.instantiate = function (buff, imp) {
+WebAssembly.instantiate = function (arrayBuffer, imp) {
     const newImports = imp//{};
     self.WebAssemblyCallsFound.altered = true;
     const stackLocation = new Error().stack;
     let itemToDigestForHash;
     let promiseToWait;
-    if (buff instanceof WebAssembly.Module) {
+    if (arrayBuffer instanceof WebAssembly.Module) {
         //buff is a Module, so cannot use Wabt or generate hash string
         const encoder = new TextEncoder();
-        itemToDigestForHash = encoder.encode(buff.toString());
+        itemToDigestForHash = encoder.encode(arrayBuffer.toString());
         promiseToWait = () => Promise.resolve();
     } else {
         if(self.saveWasmBuffer){
@@ -82,12 +82,12 @@ WebAssembly.instantiate = function (buff, imp) {
         } else {
             promiseToWait = () => Promise.resolve();
         }
-        itemToDigestForHash = buff;
+        itemToDigestForHash = arrayBuffer;
     }
     //Get the hash of the Wasm file for logging
     return promiseToWait()
     .then(crypto.subtle.digest('SHA-256', itemToDigestForHash))
-        .then(wasmHash => {
+    .then(wasmHash => {
             //Get the hash as a hex string
             const wasmHashString = Array.from(new Uint8Array(wasmHash)).map(b => b.toString(16).padStart(2, '0')).join('');
             //Record the wasmHash and the instantiate call
@@ -118,7 +118,7 @@ WebAssembly.instantiate = function (buff, imp) {
                 }
             }*/
             //Call the original .instantiate function to get the Result Object 
-            return __ogWaI(buff, newImports)
+            return __ogWaI(arrayBuffer, newImports)
                 .then(function (re) {
                     return re;
                     //Depending on whether * buff * param was bytes or a Module,
@@ -228,15 +228,13 @@ WebAssembly.instantiateStreaming = function (source, imp) {
                 }
                 return promiseToWait()
                 .then(() => {
-                    crypto.subtle.digest('SHA-256', arrayBuffer)
+                    return crypto.subtle.digest('SHA-256', arrayBuffer)
                     .then(wasmHash => {
                         const wasmHashString = Array.from(new Uint8Array(wasmHash)).map(b => b.toString(16).padStart(2, '0')).join('');
                         self.WebAssemblyCallsFound.addWasmFileReference(wasmHashString);
                         self.WebAssemblyCallsFound.WasmFiles[wasmHashString].addInstantiateStreaming(stackLocation);
 
                         return WebAssembly.instantiate(arrayBuffer, imp);
-
-
                     })
                 })
 

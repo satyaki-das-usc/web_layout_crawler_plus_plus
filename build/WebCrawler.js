@@ -71,6 +71,7 @@ var path_1 = require("path");
 var Queue_1 = require("./Queue");
 var uuidv1 = require('uuidv1');
 var config_json_1 = require("./config.json");
+var chalk_1 = __importDefault(require("chalk"));
 var SubURLScanMode;
 (function (SubURLScanMode) {
     SubURLScanMode["FULL"] = "full";
@@ -674,23 +675,54 @@ var Crawler = /** @class */ (function () {
     Crawler.prototype.takeScreenshot = function (page) {
         var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
-            var screenshotBuffer, screenshotPath;
+            var screenshotBuffer, imageType, screenshotError_1, fallbackScreenshotError_1, screenshotPath;
             return __generator(this, function (_c) {
                 switch (_c.label) {
-                    case 0: return [4 /*yield*/, page.screenshot({
-                            type: 'jpeg',
-                            quality: 80,
-                            fullPage: true
-                        })];
+                    case 0:
+                        screenshotBuffer = null;
+                        imageType = 'png';
+                        _c.label = 1;
                     case 1:
-                        screenshotBuffer = _c.sent();
-                        if (!((_a = this.currentJob) === null || _a === void 0 ? void 0 : _a.url)) return [3 /*break*/, 3];
-                        screenshotPath = this.sanitizeURLForFileSystem((_b = this.currentJob) === null || _b === void 0 ? void 0 : _b.url, this.screenshotOutputPath) + '.png';
-                        return [4 /*yield*/, fs_extra_1.default.outputFile(screenshotPath, screenshotBuffer)];
+                        _c.trys.push([1, 3, , 4]);
+                        return [4 /*yield*/, page.screenshot({
+                                type: imageType,
+                                // quality: 80,
+                                fullPage: true,
+                            })];
                     case 2:
+                        screenshotBuffer = _c.sent();
+                        return [3 /*break*/, 4];
+                    case 3:
+                        screenshotError_1 = _c.sent();
+                        console.error(chalk_1.default.yellow("Couldn't take full-page screenshot. Trying viewport screenshot."));
+                        return [3 /*break*/, 4];
+                    case 4:
+                        if (!(screenshotBuffer == null)) return [3 /*break*/, 9];
+                        return [4 /*yield*/, this.wait(2)];
+                    case 5:
                         _c.sent();
-                        _c.label = 3;
-                    case 3: return [2 /*return*/];
+                        _c.label = 6;
+                    case 6:
+                        _c.trys.push([6, 8, , 9]);
+                        return [4 /*yield*/, page.screenshot({
+                                type: imageType,
+                                fullPage: false,
+                            })];
+                    case 7:
+                        screenshotBuffer = _c.sent();
+                        return [3 /*break*/, 9];
+                    case 8:
+                        fallbackScreenshotError_1 = _c.sent();
+                        console.error(chalk_1.default.yellow("Couldn't take viewport screenshot."));
+                        throw fallbackScreenshotError_1;
+                    case 9:
+                        if (!(screenshotBuffer != null && ((_a = this.currentJob) === null || _a === void 0 ? void 0 : _a.url))) return [3 /*break*/, 11];
+                        screenshotPath = this.sanitizeURLForFileSystem((_b = this.currentJob) === null || _b === void 0 ? void 0 : _b.url, this.screenshotOutputPath) + '.' + imageType;
+                        return [4 /*yield*/, fs_extra_1.default.outputFile(screenshotPath, screenshotBuffer)];
+                    case 10:
+                        _c.sent();
+                        _c.label = 11;
+                    case 11: return [2 /*return*/];
                 }
             });
         });
