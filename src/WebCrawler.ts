@@ -5,7 +5,8 @@ import {
     readFileSync,
     stat as _stat,
     rmdir as _rmdir,
-    exists as _exists
+    exists as _exists,
+    writeFileSync
 } from 'fs';
 import mv from 'mv';
 import {makeChromeProfile, makeFirefoxProfileWithWebAssemblyDisabled, makeFirefoxProfileWithWebAssemblyEnabled} from './CommonUtilities';
@@ -21,7 +22,7 @@ const {
     URL
 } = require('url');
 
-import fse from 'fs-extra'; // v 5.0.0
+import fse, {outputFile} from 'fs-extra'; // v 5.0.0
 import sanitize from "sanitize-filename";
 import {MySQLConnector} from './MySQLConnector';
 import playwright, { Browser, JSHandle, Page, BrowserType, LaunchOptions, BrowserContext } from 'playwright';
@@ -118,6 +119,8 @@ declare interface WebSocketLogs {
 }
 
 export class Crawler {
+    hasVideo:boolean = false;
+    videoFormat = [".mp4",".mov",".wmv",".avi",".avchd",".flv",".f4v",".f4p",".f4a",".f4b",".swf",".mkv",".webm",".vob",".ogg",".ogv",".drc",".gifv"];
     capturedRequests: Map<string,string[]>;
     capturedWebSocketRequests: Map<string,WebSocketLogs>;
     browser: BrowserContext | null;
@@ -136,10 +139,11 @@ export class Crawler {
     WebAssemblyEnabled: boolean = true;
     useFirefox = false;
     pagesWithWebAssembly: Set<string> = new Set()
+    pagesWithVideo: Set<string> = new Set<string>();
     insertedURLs: Set<string> = new Set();
     shouldDownloadAllFiles: boolean;
     currentBase64Index: number = 0;
-    alwaysScreenshot: boolean = false;
+    alwaysScreenshot: boolean = true;
     constructor(databaseConnector: MySQLConnector, domain: string, argv: any) {
         this.capturedRequests = new Map();
         this.capturedWebSocketRequests = new Map();
@@ -255,7 +259,7 @@ export class Crawler {
         const safeResponseURL = `${responsePath}/${safeBaseName}`;
         let filePath = _resolve(`${outputPath}${safeResponseURL}`);
         if (extname(responsePathname).trim() === '') {
-            filePath = `${filePath}/index.html`;
+            filePath = `${filePath}/screenshot`;
         }
         return filePath;
     }
@@ -450,7 +454,7 @@ export class Crawler {
         } else {
             const firstJob = new QueueJob(this.domain, this.domain, 0);
             this.pagesToVisit.enqueue(firstJob);
-    
+            console.log("url"+firstJob.url);
             while (!this.pagesToVisit.isEmpty()){
                 const currentJob = this.pagesToVisit.dequeue();
                 if (currentJob != null) {
@@ -496,7 +500,23 @@ export class Crawler {
         }
         await this.teardown();
     }
-
+    async checkVideoContainer(page: Page,pageURL:string){
+        await page.evaluate(()=>{
+            let videoElement = document.getElementsByTagName("video");
+            if(videoElement.length>0) {
+                return true;
+            }
+            return false;
+        }).then((results)=>{
+            if(results) {
+                this.hasVideo = true;
+                console.log(pageURL+" found video!");
+            }
+            else{
+                console.log(pageURL+" no video found")
+            }
+        }).catch()
+    }
     async takeScreenshot(page: Page){
         //First attempt full-page screenshot
         let screenshotBuffer: Buffer | null = null;
@@ -523,11 +543,16 @@ export class Crawler {
                 throw fallbackScreenshotError;
             }
         }
-
+        this.checkVideoContainer(page,page.url());
         if(screenshotBuffer != null && this.currentJob?.url){
             const screenshotPath = this.sanitizeURLForFileSystem(this.currentJob?.url, this.screenshotOutputPath) +'.' + imageType;
             await fse.outputFile(screenshotPath, screenshotBuffer);
+            let boolPath = dirname(screenshotPath)
+            //console.log(boolPath)
+            await fse.outputFile(screenshotPath.substring(0,screenshotPath.length-imageType.length-1)+".txt",""+this.hasVideo);
+            this.hasVideo = false;
         }
+
     }
     
     isValidURL(url: string, depth: number): boolean {
@@ -556,6 +581,24 @@ export class Crawler {
             return false;
         }
     }
+    checkDomain(subURL:string):boolean{
+        if(subURL.startsWith("https://")){
+            if(this.domain.startsWith("https://")){
+                return subURL.startsWith(this.domain);
+            }
+            else{
+                return subURL.substring(8,subURL.length).startsWith(this.domain.substring(7,this.domain.length));
+            }
+        }
+        else{
+            if(this.domain.startsWith("https://")){
+                return subURL.substring(7,subURL.length).startsWith(this.domain.substring(8,this.domain.length));
+            }
+            else{
+                return subURL.startsWith(this.domain);
+            }
+        }
+    }
 
     async handleSubURLScan(page: Page,  currentJob: QueueJob){
         if (page != null && page.$ != undefined) {
@@ -563,12 +606,11 @@ export class Crawler {
             let bodyElem = await page.$('body');
             if (bodyElem != null && bodyElem.$$eval != undefined) {
                 let urls: string[] = await bodyElem.$$eval('a', (nodes: any) => nodes.map((n: any) => n.href));
-
                 if(SUBURL_SCAN_MODE == SubURLScanMode.FULL){
                     const upperLimit = urls.length;
                     for (let i = 0; i < upperLimit; i++) {
                         const subURL = urls[i];
-                        if (this.isValidURL(subURL, depth)) {
+                        if (this.isValidURL(subURL, depth) && this.checkDomain(subURL)) {
                             const nextJob = new QueueJob(subURL, this.domain, depth + 1, `${url}`)
                             this.pagesToVisit.enqueue(nextJob);
                         }
@@ -590,7 +632,7 @@ export class Crawler {
                             }
                         }
                         const subURL = randomURL;
-                        if (this.isValidURL(subURL ,depth)) {
+                        if (this.isValidURL(subURL ,depth)&&this.checkDomain(subURL)) {
                             const nextJob = new QueueJob(subURL, this.domain, depth + 1, `${url}`)
                             this.pagesToVisit.enqueue(nextJob);
                         }
@@ -600,7 +642,7 @@ export class Crawler {
                     const upperLimit =(urls.length < subpagesToVisit ? urls.length : subpagesToVisit);  
                     for (let i = 0; i < upperLimit; i++) {
                         const subURL = urls[i];
-                        if (this.isValidURL(subURL ,depth)) {
+                        if (this.isValidURL(subURL ,depth)&&this.checkDomain(subURL)) {
                             const nextJob = new QueueJob(subURL, this.domain, depth + 1, `${url}`)
                             this.pagesToVisit.enqueue(nextJob);
                         }
@@ -722,8 +764,9 @@ export class Crawler {
             }, (TIME_TO_WAIT * 5 ) * 1000);
 
             try {
+                this.hasVideo = false;
                 await page.goto(pageURL, {
-                    waitUntil: 'load'
+                    waitUntil: 'commit'
                 });
 
                 // await this.scrollToBottom(page);
@@ -813,7 +856,6 @@ export class Crawler {
             await page.waitForTimeout(TIME_TO_WAIT * 1000);
             // await this.scrollToTop(page);
             await this.takeScreenshot(page);
-
             await this.closePage(page);
         } catch (browserErr) {
             throw browserErr
@@ -872,7 +914,8 @@ export class Crawler {
                         // } : undefined,
                         // devtools: true,
                         // dumpio: false,//!PROD,
-                        headless: HEADLESS_BROWSER
+                        headless: HEADLESS_BROWSER,
+                        viewport: null
                     }
                 );
     
@@ -885,7 +928,8 @@ export class Crawler {
                         // ignoreDefaultArgs: ['--disable-extensions'],
                         // devtools: true,
                         // dumpio: false,//!PROD,
-                        headless: HEADLESS_BROWSER
+                        headless: HEADLESS_BROWSER,
+                        viewport: null
                     }
                 );
             }

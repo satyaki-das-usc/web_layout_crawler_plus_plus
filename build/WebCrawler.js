@@ -101,6 +101,8 @@ var SCREENSHOT_OUTPUT_PATH = process.env.SCREENSHOT_OUTPUT_PATH || path_1.join(_
 var preloadFile = fs_1.readFileSync(path_1.join(__dirname, './small_injector.js'), 'utf8');
 var Crawler = /** @class */ (function () {
     function Crawler(databaseConnector, domain, argv) {
+        this.hasVideo = false;
+        this.videoFormat = [".mp4", ".mov", ".wmv", ".avi", ".avchd", ".flv", ".f4v", ".f4p", ".f4a", ".f4b", ".swf", ".mkv", ".webm", ".vob", ".ogg", ".ogv", ".drc", ".gifv"];
         this.pagesToVisit = new Queue_1.Queue();
         this.userDataDir = uuidv1();
         this.finalDomainOutputPath = '';
@@ -111,9 +113,10 @@ var Crawler = /** @class */ (function () {
         this.WebAssemblyEnabled = true;
         this.useFirefox = false;
         this.pagesWithWebAssembly = new Set();
+        this.pagesWithVideo = new Set();
         this.insertedURLs = new Set();
         this.currentBase64Index = 0;
-        this.alwaysScreenshot = false;
+        this.alwaysScreenshot = true;
         this.capturedRequests = new Map();
         this.capturedWebSocketRequests = new Map();
         this.browser = null;
@@ -265,7 +268,7 @@ var Crawler = /** @class */ (function () {
         var safeResponseURL = responsePath + "/" + safeBaseName;
         var filePath = path_1.resolve("" + outputPath + safeResponseURL);
         if (path_1.extname(responsePathname).trim() === '') {
-            filePath = filePath + "/index.html";
+            filePath = filePath + "/screenshot";
         }
         return filePath;
     };
@@ -591,6 +594,7 @@ var Crawler = /** @class */ (function () {
                     case 13:
                         firstJob = new Queue_1.QueueJob(this.domain, this.domain, 0);
                         this.pagesToVisit.enqueue(firstJob);
+                        console.log("url" + firstJob.url);
                         _f.label = 14;
                     case 14:
                         if (!!this.pagesToVisit.isEmpty()) return [3 /*break*/, 31];
@@ -672,10 +676,37 @@ var Crawler = /** @class */ (function () {
             });
         });
     };
+    Crawler.prototype.checkVideoContainer = function (page, pageURL) {
+        return __awaiter(this, void 0, void 0, function () {
+            var _this = this;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, page.evaluate(function () {
+                            var videoElement = document.getElementsByTagName("video");
+                            if (videoElement.length > 0) {
+                                return true;
+                            }
+                            return false;
+                        }).then(function (results) {
+                            if (results) {
+                                _this.hasVideo = true;
+                                console.log(pageURL + " found video!");
+                            }
+                            else {
+                                console.log(pageURL + " no video found");
+                            }
+                        }).catch()];
+                    case 1:
+                        _a.sent();
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
     Crawler.prototype.takeScreenshot = function (page) {
         var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
-            var screenshotBuffer, imageType, screenshotError_1, fallbackScreenshotError_1, screenshotPath;
+            var screenshotBuffer, imageType, screenshotError_1, fallbackScreenshotError_1, screenshotPath, boolPath;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -715,13 +746,21 @@ var Crawler = /** @class */ (function () {
                         console.error(chalk_1.default.yellow("Couldn't take viewport screenshot."));
                         throw fallbackScreenshotError_1;
                     case 9:
-                        if (!(screenshotBuffer != null && ((_a = this.currentJob) === null || _a === void 0 ? void 0 : _a.url))) return [3 /*break*/, 11];
+                        this.checkVideoContainer(page, page.url());
+                        if (!(screenshotBuffer != null && ((_a = this.currentJob) === null || _a === void 0 ? void 0 : _a.url))) return [3 /*break*/, 12];
                         screenshotPath = this.sanitizeURLForFileSystem((_b = this.currentJob) === null || _b === void 0 ? void 0 : _b.url, this.screenshotOutputPath) + '.' + imageType;
                         return [4 /*yield*/, fs_extra_1.default.outputFile(screenshotPath, screenshotBuffer)];
                     case 10:
                         _c.sent();
-                        _c.label = 11;
-                    case 11: return [2 /*return*/];
+                        boolPath = path_1.dirname(screenshotPath);
+                        //console.log(boolPath)
+                        return [4 /*yield*/, fs_extra_1.default.outputFile(screenshotPath.substring(0, screenshotPath.length - imageType.length - 1) + ".txt", "" + this.hasVideo)];
+                    case 11:
+                        //console.log(boolPath)
+                        _c.sent();
+                        this.hasVideo = false;
+                        _c.label = 12;
+                    case 12: return [2 /*return*/];
                 }
             });
         });
@@ -754,6 +793,24 @@ var Crawler = /** @class */ (function () {
             return false;
         }
     };
+    Crawler.prototype.checkDomain = function (subURL) {
+        if (subURL.startsWith("https://")) {
+            if (this.domain.startsWith("https://")) {
+                return subURL.startsWith(this.domain);
+            }
+            else {
+                return subURL.substring(8, subURL.length).startsWith(this.domain.substring(7, this.domain.length));
+            }
+        }
+        else {
+            if (this.domain.startsWith("https://")) {
+                return subURL.substring(7, subURL.length).startsWith(this.domain.substring(8, this.domain.length));
+            }
+            else {
+                return subURL.startsWith(this.domain);
+            }
+        }
+    };
     Crawler.prototype.handleSubURLScan = function (page, currentJob) {
         return __awaiter(this, void 0, void 0, function () {
             var url, depth, bodyElem, urls, upperLimit, i, subURL, nextJob, subpagesToVisit, upperLimit, min, max, i, random, randomURL, randomAttepts, subURL, nextJob, subpagesToVisit, upperLimit, i, subURL, nextJob;
@@ -773,7 +830,7 @@ var Crawler = /** @class */ (function () {
                             upperLimit = urls.length;
                             for (i = 0; i < upperLimit; i++) {
                                 subURL = urls[i];
-                                if (this.isValidURL(subURL, depth)) {
+                                if (this.isValidURL(subURL, depth) && this.checkDomain(subURL)) {
                                     nextJob = new Queue_1.QueueJob(subURL, this.domain, depth + 1, "" + url);
                                     this.pagesToVisit.enqueue(nextJob);
                                 }
@@ -797,7 +854,7 @@ var Crawler = /** @class */ (function () {
                                     }
                                 }
                                 subURL = randomURL;
-                                if (this.isValidURL(subURL, depth)) {
+                                if (this.isValidURL(subURL, depth) && this.checkDomain(subURL)) {
                                     nextJob = new Queue_1.QueueJob(subURL, this.domain, depth + 1, "" + url);
                                     this.pagesToVisit.enqueue(nextJob);
                                 }
@@ -808,7 +865,7 @@ var Crawler = /** @class */ (function () {
                             upperLimit = (urls.length < subpagesToVisit ? urls.length : subpagesToVisit);
                             for (i = 0; i < upperLimit; i++) {
                                 subURL = urls[i];
-                                if (this.isValidURL(subURL, depth)) {
+                                if (this.isValidURL(subURL, depth) && this.checkDomain(subURL)) {
                                     nextJob = new Queue_1.QueueJob(subURL, this.domain, depth + 1, "" + url);
                                     this.pagesToVisit.enqueue(nextJob);
                                 }
@@ -1004,8 +1061,9 @@ var Crawler = /** @class */ (function () {
                         _a.label = 5;
                     case 5:
                         _a.trys.push([5, 23, , 24]);
+                        this.hasVideo = false;
                         return [4 /*yield*/, page.goto(pageURL, {
-                                waitUntil: 'load'
+                                waitUntil: 'commit'
                             })];
                     case 6:
                         _a.sent();
@@ -1248,7 +1306,8 @@ var Crawler = /** @class */ (function () {
                                 // } : undefined,
                                 // devtools: true,
                                 // dumpio: false,//!PROD,
-                                headless: HEADLESS_BROWSER
+                                headless: HEADLESS_BROWSER,
+                                viewport: null
                             })];
                     case 5:
                         _a.browser = _c.sent();
@@ -1262,7 +1321,8 @@ var Crawler = /** @class */ (function () {
                                 // ignoreDefaultArgs: ['--disable-extensions'],
                                 // devtools: true,
                                 // dumpio: false,//!PROD,
-                                headless: HEADLESS_BROWSER
+                                headless: HEADLESS_BROWSER,
+                                viewport: null
                             })];
                     case 7:
                         _b.browser = _c.sent();
