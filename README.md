@@ -17,4 +17,4 @@ This project uses the Playwright library to crawl a specified webpage with Chrom
 1. Run the command `node ./build/index.js --url <url_to_san>` to scan the `<url_to_san>` and all of its first-level subpages. For example, try running the command `node ./build/index.js --url https://jkumara.github.io/pong-wasm/` as this site contains WebAssembly. 
 2. To scan a list of urls with the crawler, run the command `node ./build/index.js --file <file_path>` to read in the file at `<file_path>`. For example, to use the included file `sites.txt`, run the command `node ./build/index.js --file sites.txt`
 3. By default, both of these commands will now only download WebAssembly file found by default. If you want to download all files, add the flag `--full true` to the command. For example, if running the example in Usage 2, run the command `node ./build/index.js --file sites.txt --full true`.
-
+4. To generate visual analysis report, run `python scripts/ScreenshotAnalysis.py`
