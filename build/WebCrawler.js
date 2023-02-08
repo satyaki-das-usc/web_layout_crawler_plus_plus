@@ -117,6 +117,7 @@ var Crawler = /** @class */ (function () {
         this.insertedURLs = new Set();
         this.currentBase64Index = 0;
         this.alwaysScreenshot = true;
+        this.screenshotSubPath = "";
         this.capturedRequests = new Map();
         this.capturedWebSocketRequests = new Map();
         this.browser = null;
@@ -137,7 +138,8 @@ var Crawler = /** @class */ (function () {
         var UsingFirefoxSubDirectoryName = this.useFirefox ? 'Firefox' : 'Chrome';
         var jsOutputDir = path_1.resolve(JS_OUTPUT_PATH, domainName, UsingFirefoxSubDirectoryName, WebAssemblyEnabledSubDirectoryName);
         this.finalDomainOutputPath = jsOutputDir;
-        var screenshotDir = path_1.resolve(SCREENSHOT_OUTPUT_PATH, domainName, UsingFirefoxSubDirectoryName, WebAssemblyEnabledSubDirectoryName);
+        var screenshotDir = path_1.resolve(SCREENSHOT_OUTPUT_PATH, domainName);
+        this.screenshotSubPath = path_1.join(UsingFirefoxSubDirectoryName, WebAssemblyEnabledSubDirectoryName);
         this.screenshotOutputPath = screenshotDir;
         if (useFirefox) {
             if (!this.WebAssemblyEnabled) {
@@ -267,9 +269,12 @@ var Crawler = /** @class */ (function () {
         var safeBaseName = sanitize_filename_1.default(responseBasename).substring(0, 50);
         var safeResponseURL = responsePath + "/" + safeBaseName;
         var filePath = path_1.resolve("" + outputPath + safeResponseURL);
+        //join(filePath,UsingFirefoxSubDirectoryName,WebAssemblyEnabledSubDirectoryName)
+        console.log(this.screenshotSubPath);
         if (path_1.extname(responsePathname).trim() === '') {
-            filePath = filePath + "/screenshot";
+            filePath = filePath + "/" + this.screenshotSubPath + "/screenshot";
         }
+        console.log(filePath);
         return filePath;
     };
     /**
@@ -552,6 +557,7 @@ var Crawler = /** @class */ (function () {
                         return [4 /*yield*/, this.setup()];
                     case 1:
                         _f.sent();
+                        console.log(this.pagesWithWebAssembly);
                         if (!(this.pagesWithWebAssembly.size > 0)) return [3 /*break*/, 13];
                         _f.label = 2;
                     case 2:
@@ -594,20 +600,22 @@ var Crawler = /** @class */ (function () {
                     case 13:
                         firstJob = new Queue_1.QueueJob(this.domain, this.domain, 0);
                         this.pagesToVisit.enqueue(firstJob);
-                        console.log("url" + firstJob.url);
                         _f.label = 14;
                     case 14:
                         if (!!this.pagesToVisit.isEmpty()) return [3 /*break*/, 31];
                         currentJob = this.pagesToVisit.dequeue();
+                        console.log(currentJob);
                         if (!(currentJob != null)) return [3 /*break*/, 30];
                         this.currentJob = currentJob;
                         currentURL = currentJob.url;
+                        //console.log("bef scanning")
                         if (this.scannedSubPages.has(currentURL)) {
                             return [3 /*break*/, 14];
                         }
                         else {
                             this.scannedSubPages.add(currentURL);
                         }
+                        // console.log("scanning")
                         this.capturedRequests.clear();
                         this.capturedWebSocketRequests.clear();
                         _f.label = 15;
@@ -755,9 +763,10 @@ var Crawler = /** @class */ (function () {
                     case 11:
                         _c.sent();
                         boolPath = path_1.dirname(screenshotPath);
-                        console.log(this.hasVideo);
+                        //console.log(this.hasVideo);
                         return [4 /*yield*/, fs_extra_1.default.outputFile(screenshotPath.substring(0, screenshotPath.length - imageType.length - 1) + ".txt", "" + this.hasVideo).then(function () { return (_this.hasVideo = false); })];
                     case 12:
+                        //console.log(this.hasVideo);
                         _c.sent();
                         _c.label = 13;
                     case 13: return [2 /*return*/];
@@ -1306,8 +1315,8 @@ var Crawler = /** @class */ (function () {
                                 // } : undefined,
                                 // devtools: true,
                                 // dumpio: false,//!PROD,
-                                headless: HEADLESS_BROWSER,
-                                viewport: null
+                                headless: HEADLESS_BROWSER
+                                //viewport: null
                             })];
                     case 5:
                         _a.browser = _c.sent();
@@ -1321,8 +1330,8 @@ var Crawler = /** @class */ (function () {
                                 // ignoreDefaultArgs: ['--disable-extensions'],
                                 // devtools: true,
                                 // dumpio: false,//!PROD,
-                                headless: HEADLESS_BROWSER,
-                                viewport: null
+                                headless: HEADLESS_BROWSER
+                                //viewport: null
                             })];
                     case 7:
                         _b.browser = _c.sent();

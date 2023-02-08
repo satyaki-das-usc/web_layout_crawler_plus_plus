@@ -50,8 +50,8 @@ async function crawlSite(urlToScan: string, database: MySQLConnector){
     if (!pageURL.includes('http://') && !pageURL.includes('https://')) {
         pageURL = "http://" + pageURL;
     }
-    const crawler = new Crawler(database, pageURL, argv);
     for(const browser of ['chrome','firefox']){
+        const crawler = new Crawler(database, pageURL, argv);
         console.log(`Scanning with ${browser}: WebAssembly Enabled`)
         await crawler.scanPages(browser);
         crawler.setAlwaysScreenshot();

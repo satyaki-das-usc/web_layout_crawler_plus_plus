@@ -144,6 +144,7 @@ export class Crawler {
     shouldDownloadAllFiles: boolean;
     currentBase64Index: number = 0;
     alwaysScreenshot: boolean = true;
+    screenshotSubPath:string = "";
     constructor(databaseConnector: MySQLConnector, domain: string, argv: any) {
         this.capturedRequests = new Map();
         this.capturedWebSocketRequests = new Map();
@@ -165,7 +166,8 @@ export class Crawler {
         const UsingFirefoxSubDirectoryName = this.useFirefox ? 'Firefox' : 'Chrome';
         const jsOutputDir = _resolve(JS_OUTPUT_PATH, domainName,UsingFirefoxSubDirectoryName,WebAssemblyEnabledSubDirectoryName);
         this.finalDomainOutputPath = jsOutputDir;
-        const screenshotDir = _resolve(SCREENSHOT_OUTPUT_PATH, domainName,UsingFirefoxSubDirectoryName,WebAssemblyEnabledSubDirectoryName);
+        const screenshotDir = _resolve(SCREENSHOT_OUTPUT_PATH,domainName)
+        this.screenshotSubPath = join(UsingFirefoxSubDirectoryName,WebAssemblyEnabledSubDirectoryName);
         this.screenshotOutputPath = screenshotDir;
 
         if(useFirefox){
@@ -251,6 +253,7 @@ export class Crawler {
     }
 
     sanitizeURLForFileSystem(url: string, outputPath: string){
+
         const responseURLParsed = new URL(url);
         let responsePathname = responseURLParsed.pathname;
         const responseBasename = basename(responsePathname);
@@ -258,9 +261,12 @@ export class Crawler {
         const safeBaseName = sanitize(responseBasename).substring(0, 50);
         const safeResponseURL = `${responsePath}/${safeBaseName}`;
         let filePath = _resolve(`${outputPath}${safeResponseURL}`);
+        //join(filePath,UsingFirefoxSubDirectoryName,WebAssemblyEnabledSubDirectoryName)
+        console.log(this.screenshotSubPath)
         if (extname(responsePathname).trim() === '') {
-            filePath = `${filePath}/screenshot`;
+            filePath = `${filePath}/${this.screenshotSubPath}/screenshot`;
         }
+        console.log(filePath);
         return filePath;
     }
 
@@ -437,7 +443,7 @@ export class Crawler {
     async scanPages(browser: string) {
         this.setLaunchOptions(browser, false);
         await this.setup();
-
+        console.log(this.pagesWithWebAssembly);
         if(this.pagesWithWebAssembly.size > 0){
             for(const url of this.pagesWithWebAssembly){
                 const job = new QueueJob(url, this.domain, 0);
@@ -454,17 +460,21 @@ export class Crawler {
         } else {
             const firstJob = new QueueJob(this.domain, this.domain, 0);
             this.pagesToVisit.enqueue(firstJob);
-            console.log("url"+firstJob.url);
+            //console.log("url"+firstJob.url);
             while (!this.pagesToVisit.isEmpty()){
+                //console.log(123123)
                 const currentJob = this.pagesToVisit.dequeue();
+                console.log(currentJob);
                 if (currentJob != null) {
                     this.currentJob = currentJob
                     const currentURL = currentJob.url;
+                    //console.log("bef scanning")
                     if(this.scannedSubPages.has(currentURL)){
                         continue;
                     } else {
                         this.scannedSubPages.add(currentURL);
                     }
+                   // console.log("scanning")
                     this.capturedRequests.clear();
                     this.capturedWebSocketRequests.clear();
                     try {
@@ -761,7 +771,7 @@ export class Crawler {
             timeout = setTimeout(() => {
                 console.log('EXECUTE TIMEOUT');
                 resolve(crawlResults);
-            }, (TIME_TO_WAIT * 5 ) * 1000);
+            }, (TIME_TO_WAIT * 5) * 1000);
 
             try {
                 this.hasVideo = false;
@@ -914,8 +924,8 @@ export class Crawler {
                         // } : undefined,
                         // devtools: true,
                         // dumpio: false,//!PROD,
-                        headless: HEADLESS_BROWSER,
-                        viewport: null
+                        headless: HEADLESS_BROWSER
+                        //viewport: null
                     }
                 );
     
@@ -928,8 +938,8 @@ export class Crawler {
                         // ignoreDefaultArgs: ['--disable-extensions'],
                         // devtools: true,
                         // dumpio: false,//!PROD,
-                        headless: HEADLESS_BROWSER,
-                        viewport: null
+                        headless: HEADLESS_BROWSER
+                        //viewport: null
                     }
                 );
             }

@@ -103,7 +103,7 @@ function waitFor(seconds) {
 }
 function crawlSite(urlToScan, database) {
     return __awaiter(this, void 0, void 0, function () {
-        var pageURL, crawler, _a, _b, browser, e_1_1;
+        var pageURL, _a, _b, browser, crawler, e_1_1;
         var e_1, _c;
         return __generator(this, function (_d) {
             switch (_d.label) {
@@ -112,7 +112,6 @@ function crawlSite(urlToScan, database) {
                     if (!pageURL.includes('http://') && !pageURL.includes('https://')) {
                         pageURL = "http://" + pageURL;
                     }
-                    crawler = new WebCrawler_1.Crawler(database, pageURL, argv);
                     _d.label = 1;
                 case 1:
                     _d.trys.push([1, 7, 8, 9]);
@@ -121,6 +120,7 @@ function crawlSite(urlToScan, database) {
                 case 2:
                     if (!!_b.done) return [3 /*break*/, 6];
                     browser = _b.value;
+                    crawler = new WebCrawler_1.Crawler(database, pageURL, argv);
                     console.log("Scanning with " + browser + ": WebAssembly Enabled");
                     return [4 /*yield*/, crawler.scanPages(browser)];
                 case 3:

@@ -567,12 +567,12 @@
         "affectsGlobalScope": false
       },
       "./src/WebCrawler.ts": {
-        "version": "6c113dcb4d9a3e7263f531ed72c8d5362c5bbac844ce03891a5deb19658d8ff6",
-        "signature": "b065f3deda63224cb1db8a6a82b1656b7cdfa82d83105692fbbabd0ddd10eae4",
+        "version": "e1fe973822b0956cec302c9359996bc43dfd5d850c7a0249c1e3f2fb2aacb2f2",
+        "signature": "0d897c8e8e686cd00044f84e52e70bbaafd98d5fb6b3c06e81f3b8d243382813",
         "affectsGlobalScope": true
       },
       "./src/index.ts": {
-        "version": "a02a4de75fed47ca50c0574e1f7954665fd68a8196df4ad959e71a13b4a852ab",
+        "version": "8cf1537f2f331ceeaf846360c6e8d3439a4aa8a9fbfabe1194695d217661a8df",
         "signature": "8e609bb71c20b858c77f0e9f90bb1319db8477b13f9f965f1a1e18524bf50881",
         "affectsGlobalScope": false
       },
