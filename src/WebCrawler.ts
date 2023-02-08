@@ -462,7 +462,6 @@ export class Crawler {
             this.pagesToVisit.enqueue(firstJob);
             //console.log("url"+firstJob.url);
             while (!this.pagesToVisit.isEmpty()){
-                //console.log(123123)
                 const currentJob = this.pagesToVisit.dequeue();
                 console.log(currentJob);
                 if (currentJob != null) {
@@ -778,7 +777,7 @@ export class Crawler {
                 await page.goto(pageURL, {
                     waitUntil: 'commit'
                 });
-
+                await page.waitForTimeout(TIME_TO_WAIT * 1000);
                 // await this.scrollToBottom(page);
                 if(this.currentJob){
                     try{
@@ -789,7 +788,7 @@ export class Crawler {
                     }
 
                 }
-                await page.waitForTimeout(TIME_TO_WAIT * 1000);
+
 
                 // await this.scrollToTop(page);
                 const instrumentationRecords = await this.collectInstrumentationRecordsFromPage(page);

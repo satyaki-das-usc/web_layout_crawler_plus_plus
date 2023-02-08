@@ -1076,19 +1076,19 @@ var Crawler = /** @class */ (function () {
                             })];
                     case 6:
                         _a.sent();
-                        if (!this.currentJob) return [3 /*break*/, 10];
-                        _a.label = 7;
+                        return [4 /*yield*/, page.waitForTimeout(TIME_TO_WAIT * 1000)];
                     case 7:
-                        _a.trys.push([7, , 9, 10]);
-                        return [4 /*yield*/, this.handleSubURLScan(page, this.currentJob)];
+                        _a.sent();
+                        if (!this.currentJob) return [3 /*break*/, 11];
+                        _a.label = 8;
                     case 8:
+                        _a.trys.push([8, , 10, 11]);
+                        return [4 /*yield*/, this.handleSubURLScan(page, this.currentJob)];
+                    case 9:
                         _a.sent();
-                        return [3 /*break*/, 10];
-                    case 9: return [7 /*endfinally*/];
-                    case 10: return [4 /*yield*/, page.waitForTimeout(TIME_TO_WAIT * 1000)];
-                    case 11:
-                        _a.sent();
-                        return [4 /*yield*/, this.collectInstrumentationRecordsFromPage(page)];
+                        return [3 /*break*/, 11];
+                    case 10: return [7 /*endfinally*/];
+                    case 11: return [4 /*yield*/, this.collectInstrumentationRecordsFromPage(page)];
                     case 12:
                         instrumentationRecords = _a.sent();
                         clearTimeout(timeout);
