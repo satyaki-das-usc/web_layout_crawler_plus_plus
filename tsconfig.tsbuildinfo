@@ -567,7 +567,7 @@
         "affectsGlobalScope": false
       },
       "./src/WebCrawler.ts": {
-        "version": "1c91ee33e249e292cd6a8076a2a1bd8d59d9dbb7da5b266c3426cc64bb3757c0",
+        "version": "6c113dcb4d9a3e7263f531ed72c8d5362c5bbac844ce03891a5deb19658d8ff6",
         "signature": "b065f3deda63224cb1db8a6a82b1656b7cdfa82d83105692fbbabd0ddd10eae4",
         "affectsGlobalScope": true
       },

@@ -543,14 +543,14 @@ export class Crawler {
                 throw fallbackScreenshotError;
             }
         }
-        this.checkVideoContainer(page,page.url());
+        await this.checkVideoContainer(page,page.url());
         if(screenshotBuffer != null && this.currentJob?.url){
             const screenshotPath = this.sanitizeURLForFileSystem(this.currentJob?.url, this.screenshotOutputPath) +'.' + imageType;
             await fse.outputFile(screenshotPath, screenshotBuffer);
             let boolPath = dirname(screenshotPath)
-            //console.log(boolPath)
-            await fse.outputFile(screenshotPath.substring(0,screenshotPath.length-imageType.length-1)+".txt",""+this.hasVideo);
-            this.hasVideo = false;
+            //console.log(this.hasVideo);
+            await fse.outputFile(screenshotPath.substring(0,screenshotPath.length-imageType.length-1)+".txt",""+this.hasVideo).then(()=>(this.hasVideo = false));
+
         }
 
     }

@@ -707,6 +707,7 @@ var Crawler = /** @class */ (function () {
         var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
             var screenshotBuffer, imageType, screenshotError_1, fallbackScreenshotError_1, screenshotPath, boolPath;
+            var _this = this;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -745,22 +746,21 @@ var Crawler = /** @class */ (function () {
                         fallbackScreenshotError_1 = _c.sent();
                         console.error(chalk_1.default.yellow("Couldn't take viewport screenshot."));
                         throw fallbackScreenshotError_1;
-                    case 9:
-                        this.checkVideoContainer(page, page.url());
-                        if (!(screenshotBuffer != null && ((_a = this.currentJob) === null || _a === void 0 ? void 0 : _a.url))) return [3 /*break*/, 12];
-                        screenshotPath = this.sanitizeURLForFileSystem((_b = this.currentJob) === null || _b === void 0 ? void 0 : _b.url, this.screenshotOutputPath) + '.' + imageType;
-                        return [4 /*yield*/, fs_extra_1.default.outputFile(screenshotPath, screenshotBuffer)];
+                    case 9: return [4 /*yield*/, this.checkVideoContainer(page, page.url())];
                     case 10:
                         _c.sent();
-                        boolPath = path_1.dirname(screenshotPath);
-                        //console.log(boolPath)
-                        return [4 /*yield*/, fs_extra_1.default.outputFile(screenshotPath.substring(0, screenshotPath.length - imageType.length - 1) + ".txt", "" + this.hasVideo)];
+                        if (!(screenshotBuffer != null && ((_a = this.currentJob) === null || _a === void 0 ? void 0 : _a.url))) return [3 /*break*/, 13];
+                        screenshotPath = this.sanitizeURLForFileSystem((_b = this.currentJob) === null || _b === void 0 ? void 0 : _b.url, this.screenshotOutputPath) + '.' + imageType;
+                        return [4 /*yield*/, fs_extra_1.default.outputFile(screenshotPath, screenshotBuffer)];
                     case 11:
-                        //console.log(boolPath)
                         _c.sent();
-                        this.hasVideo = false;
-                        _c.label = 12;
-                    case 12: return [2 /*return*/];
+                        boolPath = path_1.dirname(screenshotPath);
+                        console.log(this.hasVideo);
+                        return [4 /*yield*/, fs_extra_1.default.outputFile(screenshotPath.substring(0, screenshotPath.length - imageType.length - 1) + ".txt", "" + this.hasVideo).then(function () { return (_this.hasVideo = false); })];
+                    case 12:
+                        _c.sent();
+                        _c.label = 13;
+                    case 13: return [2 /*return*/];
                 }
             });
         });
