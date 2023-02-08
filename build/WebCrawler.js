@@ -431,34 +431,39 @@ var Crawler = /** @class */ (function () {
                         startBrowserError_1 = _a.sent();
                         console.error("Starting browser error", startBrowserError_1);
                         throw startBrowserError_1;
-                    case 14: return [4 /*yield*/, page.exposeFunction('saveWasmBuffer', function (stringBuffer) { return __awaiter(_this, void 0, void 0, function () {
-                            var str2ab, wasmBuffer, bufferHashString;
-                            return __generator(this, function (_a) {
-                                switch (_a.label) {
-                                    case 0:
-                                        str2ab = function _str2ab(str) {
-                                            var buf = new ArrayBuffer(str.length); // 1 byte for each char
-                                            var bufView = new Uint8Array(buf);
-                                            for (var i = 0, strLen = str.length; i < strLen; i++) {
-                                                bufView[i] = str.charCodeAt(i);
+                    case 14:
+                        page.on('frameattached', function (data) {
+                            console.log("frameattached");
+                            _this.hasVideo = true;
+                        });
+                        return [4 /*yield*/, page.exposeFunction('saveWasmBuffer', function (stringBuffer) { return __awaiter(_this, void 0, void 0, function () {
+                                var str2ab, wasmBuffer, bufferHashString;
+                                return __generator(this, function (_a) {
+                                    switch (_a.label) {
+                                        case 0:
+                                            str2ab = function _str2ab(str) {
+                                                var buf = new ArrayBuffer(str.length); // 1 byte for each char
+                                                var bufView = new Uint8Array(buf);
+                                                for (var i = 0, strLen = str.length; i < strLen; i++) {
+                                                    bufView[i] = str.charCodeAt(i);
+                                                }
+                                                return Buffer.from(buf);
+                                            };
+                                            this.containsWebAssembly = true;
+                                            if (this.currentJob) {
+                                                this.pagesWithWebAssembly.add(this.currentJob.url);
                                             }
-                                            return Buffer.from(buf);
-                                        };
-                                        this.containsWebAssembly = true;
-                                        if (this.currentJob) {
-                                            this.pagesWithWebAssembly.add(this.currentJob.url);
-                                        }
-                                        wasmBuffer = str2ab(stringBuffer);
-                                        return [4 /*yield*/, this.hashBuffer(wasmBuffer)];
-                                    case 1:
-                                        bufferHashString = _a.sent();
-                                        return [4 /*yield*/, fs_extra_1.default.outputFile(path_1.resolve(this.finalDomainOutputPath, bufferHashString + ".wasm"), wasmBuffer)];
-                                    case 2:
-                                        _a.sent();
-                                        return [2 /*return*/];
-                                }
-                            });
-                        }); })];
+                                            wasmBuffer = str2ab(stringBuffer);
+                                            return [4 /*yield*/, this.hashBuffer(wasmBuffer)];
+                                        case 1:
+                                            bufferHashString = _a.sent();
+                                            return [4 /*yield*/, fs_extra_1.default.outputFile(path_1.resolve(this.finalDomainOutputPath, bufferHashString + ".wasm"), wasmBuffer)];
+                                        case 2:
+                                            _a.sent();
+                                            return [2 /*return*/];
+                                    }
+                                });
+                            }); })];
                     case 15:
                         _a.sent();
                         // await page.setViewportSize({

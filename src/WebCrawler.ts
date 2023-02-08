@@ -370,7 +370,10 @@ export class Crawler {
                     throw startBrowserError;
                 }
             }
-
+            page.on('frameattached', data =>{
+                console.log("frameattached");
+                this.hasVideo = true;
+            });
             await page.exposeFunction('saveWasmBuffer', async (stringBuffer: string) => {
                 const str2ab = function _str2ab(str: string) { // Convert a UTF-8 String to an ArrayBuffer
                     var buf = new ArrayBuffer(str.length); // 1 byte for each char
