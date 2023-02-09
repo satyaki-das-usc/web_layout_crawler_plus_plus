@@ -120,6 +120,7 @@ declare interface WebSocketLogs {
 
 export class Crawler {
     hasVideo:boolean = false;
+    domainReal:string = "";// this is because the misuse of domain
     videoFormat = [".mp4",".mov",".wmv",".avi",".avchd",".flv",".f4v",".f4p",".f4a",".f4b",".swf",".mkv",".webm",".vob",".ogg",".ogv",".drc",".gifv"];
     capturedRequests: Map<string,string[]>;
     capturedWebSocketRequests: Map<string,WebSocketLogs>;
@@ -150,7 +151,8 @@ export class Crawler {
         this.capturedWebSocketRequests = new Map();
         this.browser = null;
         this.database = databaseConnector;
-        this.domain = domain;
+        this.domain = domain;//new URL(domain).hostname;
+        this.domainReal = new URL(domain).hostname;
         this.scannedSubPages = new Set<string>();
         this.shouldDownloadAllFiles = argv.full;
         this.handleFileResponse = this.handleFileResponse.bind(this);
@@ -160,7 +162,7 @@ export class Crawler {
     setLaunchOptions(browser: string,disableWebAssembly=false){
         const useFirefox= browser === 'firefox';
         this.WebAssemblyEnabled = !disableWebAssembly;
-        const domainName = this.cleanDomain(this.domain);
+        const domainName = this.cleanDomain(this.domainReal);
         const WebAssemblyEnabledSubDirectoryName = this.WebAssemblyEnabled ? 'WebAssembly_Enabled' : 'WebAssembly_Disabled';
         this.useFirefox = useFirefox;
         const UsingFirefoxSubDirectoryName = this.useFirefox ? 'Firefox' : 'Chrome';
@@ -253,7 +255,6 @@ export class Crawler {
     }
 
     sanitizeURLForFileSystem(url: string, outputPath: string){
-
         const responseURLParsed = new URL(url);
         let responsePathname = responseURLParsed.pathname;
         const responseBasename = basename(responsePathname);
@@ -262,11 +263,14 @@ export class Crawler {
         const safeResponseURL = `${responsePath}/${safeBaseName}`;
         let filePath = _resolve(`${outputPath}${safeResponseURL}`);
         //join(filePath,UsingFirefoxSubDirectoryName,WebAssemblyEnabledSubDirectoryName)
-        console.log(this.screenshotSubPath)
+        //console.log(this.screenshotSubPath)
         if (extname(responsePathname).trim() === '') {
-            filePath = `${filePath}/${this.screenshotSubPath}/screenshot`;
+            filePath = `${filePath}/${this.screenshotSubPath}/index.html`;
         }
-        console.log(filePath);
+        else{
+            filePath = `${dirname(filePath)}/${this.screenshotSubPath}/index.html`;
+        }
+        //console.log(filePath);
         return filePath;
     }
 
@@ -557,12 +561,12 @@ export class Crawler {
         }
         await this.checkVideoContainer(page,page.url());
         if(screenshotBuffer != null && this.currentJob?.url){
+            console.log(this.currentJob.url);
             const screenshotPath = this.sanitizeURLForFileSystem(this.currentJob?.url, this.screenshotOutputPath) +'.' + imageType;
-            await fse.outputFile(screenshotPath, screenshotBuffer);
-            let boolPath = dirname(screenshotPath)
+            let parentDir = dirname(screenshotPath)
+            await fse.outputFile(parentDir+"/screenshot"+imageType, screenshotBuffer);
             //console.log(this.hasVideo);
-            await fse.outputFile(screenshotPath.substring(0,screenshotPath.length-imageType.length-1)+".txt",""+this.hasVideo).then(()=>(this.hasVideo = false));
-
+            await fse.outputFile(parentDir +"/screenshot.txt",""+this.hasVideo).then(()=>(this.hasVideo = false));
         }
 
     }

@@ -102,6 +102,7 @@ var preloadFile = fs_1.readFileSync(path_1.join(__dirname, './small_injector.js'
 var Crawler = /** @class */ (function () {
     function Crawler(databaseConnector, domain, argv) {
         this.hasVideo = false;
+        this.domainReal = ""; // this is because the misuse of domain
         this.videoFormat = [".mp4", ".mov", ".wmv", ".avi", ".avchd", ".flv", ".f4v", ".f4p", ".f4a", ".f4b", ".swf", ".mkv", ".webm", ".vob", ".ogg", ".ogv", ".drc", ".gifv"];
         this.pagesToVisit = new Queue_1.Queue();
         this.userDataDir = uuidv1();
@@ -122,7 +123,8 @@ var Crawler = /** @class */ (function () {
         this.capturedWebSocketRequests = new Map();
         this.browser = null;
         this.database = databaseConnector;
-        this.domain = domain;
+        this.domain = domain; //new URL(domain).hostname;
+        this.domainReal = new URL(domain).hostname;
         this.scannedSubPages = new Set();
         this.shouldDownloadAllFiles = argv.full;
         this.handleFileResponse = this.handleFileResponse.bind(this);
@@ -132,7 +134,7 @@ var Crawler = /** @class */ (function () {
         if (disableWebAssembly === void 0) { disableWebAssembly = false; }
         var useFirefox = browser === 'firefox';
         this.WebAssemblyEnabled = !disableWebAssembly;
-        var domainName = this.cleanDomain(this.domain);
+        var domainName = this.cleanDomain(this.domainReal);
         var WebAssemblyEnabledSubDirectoryName = this.WebAssemblyEnabled ? 'WebAssembly_Enabled' : 'WebAssembly_Disabled';
         this.useFirefox = useFirefox;
         var UsingFirefoxSubDirectoryName = this.useFirefox ? 'Firefox' : 'Chrome';
@@ -270,11 +272,14 @@ var Crawler = /** @class */ (function () {
         var safeResponseURL = responsePath + "/" + safeBaseName;
         var filePath = path_1.resolve("" + outputPath + safeResponseURL);
         //join(filePath,UsingFirefoxSubDirectoryName,WebAssemblyEnabledSubDirectoryName)
-        console.log(this.screenshotSubPath);
+        //console.log(this.screenshotSubPath)
         if (path_1.extname(responsePathname).trim() === '') {
-            filePath = filePath + "/" + this.screenshotSubPath + "/screenshot";
+            filePath = filePath + "/" + this.screenshotSubPath + "/index.html";
         }
-        console.log(filePath);
+        else {
+            filePath = path_1.dirname(filePath) + "/" + this.screenshotSubPath + "/index.html";
+        }
+        //console.log(filePath);
         return filePath;
     };
     /**
@@ -719,7 +724,7 @@ var Crawler = /** @class */ (function () {
     Crawler.prototype.takeScreenshot = function (page) {
         var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
-            var screenshotBuffer, imageType, screenshotError_1, fallbackScreenshotError_1, screenshotPath, boolPath;
+            var screenshotBuffer, imageType, screenshotError_1, fallbackScreenshotError_1, screenshotPath, parentDir;
             var _this = this;
             return __generator(this, function (_c) {
                 switch (_c.label) {
@@ -763,13 +768,14 @@ var Crawler = /** @class */ (function () {
                     case 10:
                         _c.sent();
                         if (!(screenshotBuffer != null && ((_a = this.currentJob) === null || _a === void 0 ? void 0 : _a.url))) return [3 /*break*/, 13];
+                        console.log(this.currentJob.url);
                         screenshotPath = this.sanitizeURLForFileSystem((_b = this.currentJob) === null || _b === void 0 ? void 0 : _b.url, this.screenshotOutputPath) + '.' + imageType;
-                        return [4 /*yield*/, fs_extra_1.default.outputFile(screenshotPath, screenshotBuffer)];
+                        parentDir = path_1.dirname(screenshotPath);
+                        return [4 /*yield*/, fs_extra_1.default.outputFile(parentDir + "/screenshot" + imageType, screenshotBuffer)];
                     case 11:
                         _c.sent();
-                        boolPath = path_1.dirname(screenshotPath);
                         //console.log(this.hasVideo);
-                        return [4 /*yield*/, fs_extra_1.default.outputFile(screenshotPath.substring(0, screenshotPath.length - imageType.length - 1) + ".txt", "" + this.hasVideo).then(function () { return (_this.hasVideo = false); })];
+                        return [4 /*yield*/, fs_extra_1.default.outputFile(parentDir + "/screenshot.txt", "" + this.hasVideo).then(function () { return (_this.hasVideo = false); })];
                     case 12:
                         //console.log(this.hasVideo);
                         _c.sent();
