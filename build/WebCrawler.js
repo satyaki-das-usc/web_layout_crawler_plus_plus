@@ -117,7 +117,7 @@ var Crawler = /** @class */ (function () {
         this.pagesWithVideo = new Set();
         this.insertedURLs = new Set();
         this.currentBase64Index = 0;
-        this.alwaysScreenshot = true;
+        this.alwaysScreenshot = false;
         this.screenshotSubPath = "";
         this.capturedRequests = new Map();
         this.capturedWebSocketRequests = new Map();
@@ -1341,8 +1341,8 @@ var Crawler = /** @class */ (function () {
                                 // ignoreDefaultArgs: ['--disable-extensions'],
                                 // devtools: true,
                                 // dumpio: false,//!PROD,
-                                headless: HEADLESS_BROWSER
-                                //viewport: null
+                                headless: HEADLESS_BROWSER,
+                                viewport: null
                             })];
                     case 7:
                         _b.browser = _c.sent();
