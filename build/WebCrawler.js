@@ -771,7 +771,7 @@ var Crawler = /** @class */ (function () {
                         console.log(this.currentJob.url);
                         screenshotPath = this.sanitizeURLForFileSystem((_b = this.currentJob) === null || _b === void 0 ? void 0 : _b.url, this.screenshotOutputPath) + '.' + imageType;
                         parentDir = path_1.dirname(screenshotPath);
-                        return [4 /*yield*/, fs_extra_1.default.outputFile(parentDir + "/screenshot" + imageType, screenshotBuffer)];
+                        return [4 /*yield*/, fs_extra_1.default.outputFile(parentDir + "/screenshot." + imageType, screenshotBuffer)];
                     case 11:
                         _c.sent();
                         //console.log(this.hasVideo);
@@ -1326,8 +1326,8 @@ var Crawler = /** @class */ (function () {
                                 // } : undefined,
                                 // devtools: true,
                                 // dumpio: false,//!PROD,
-                                headless: HEADLESS_BROWSER
-                                //viewport: null
+                                headless: HEADLESS_BROWSER,
+                                viewport: { width: 1280, height: 720 }
                             })];
                     case 5:
                         _a.browser = _c.sent();

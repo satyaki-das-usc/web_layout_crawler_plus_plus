@@ -564,7 +564,7 @@ export class Crawler {
             console.log(this.currentJob.url);
             const screenshotPath = this.sanitizeURLForFileSystem(this.currentJob?.url, this.screenshotOutputPath) +'.' + imageType;
             let parentDir = dirname(screenshotPath)
-            await fse.outputFile(parentDir+"/screenshot"+imageType, screenshotBuffer);
+            await fse.outputFile(parentDir+"/screenshot."+imageType, screenshotBuffer);
             //console.log(this.hasVideo);
             await fse.outputFile(parentDir +"/screenshot.txt",""+this.hasVideo).then(()=>(this.hasVideo = false));
         }
@@ -930,8 +930,8 @@ export class Crawler {
                         // } : undefined,
                         // devtools: true,
                         // dumpio: false,//!PROD,
-                        headless: HEADLESS_BROWSER
-                        //viewport: null
+                        headless: HEADLESS_BROWSER,
+                        viewport: { width: 1280, height: 720 }
                     }
                 );
     
@@ -944,8 +944,8 @@ export class Crawler {
                         // ignoreDefaultArgs: ['--disable-extensions'],
                         // devtools: true,
                         // dumpio: false,//!PROD,
-                        headless: HEADLESS_BROWSER
-                        //viewport: null
+                        headless: HEADLESS_BROWSER,
+                        viewport: null
                     }
                 );
             }
