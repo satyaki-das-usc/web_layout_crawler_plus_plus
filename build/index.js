@@ -103,7 +103,7 @@ function waitFor(seconds) {
 }
 function crawlSite(urlToScan, database) {
     return __awaiter(this, void 0, void 0, function () {
-        var pageURL, _a, _b, browser, crawler, e_1_1;
+        var pageURL, _a, _b, browser_1, crawler, e_1_1;
         var e_1, _c;
         return __generator(this, function (_d) {
             switch (_d.label) {
@@ -119,15 +119,15 @@ function crawlSite(urlToScan, database) {
                     _d.label = 2;
                 case 2:
                     if (!!_b.done) return [3 /*break*/, 6];
-                    browser = _b.value;
+                    browser_1 = _b.value;
                     crawler = new WebCrawler_1.Crawler(database, pageURL, argv);
-                    console.log("Scanning with " + browser + ": WebAssembly Enabled");
-                    return [4 /*yield*/, crawler.scanPages(browser)];
+                    console.log("Scanning with " + browser_1 + ": WebAssembly Enabled");
+                    return [4 /*yield*/, crawler.scanPages(browser_1)];
                 case 3:
                     _d.sent();
                     crawler.setAlwaysScreenshot();
-                    console.log("Scanning with " + browser + ": WebAssembly Disabled");
-                    return [4 /*yield*/, crawler.screenshotPagesWithWebAssemblyDisabled(browser)];
+                    console.log("Scanning with " + browser_1 + ": WebAssembly Disabled");
+                    return [4 /*yield*/, crawler.screenshotPagesWithWebAssemblyDisabled(browser_1)];
                 case 4:
                     _d.sent();
                     _d.label = 5;

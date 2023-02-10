@@ -15,6 +15,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@cliqz/adblocker-playwright": "^1.25.2",
     "@types/uuid": "^8.0.0",
     "chalk": "^4.1.0",
     "fs-extra": "^8.1.0",

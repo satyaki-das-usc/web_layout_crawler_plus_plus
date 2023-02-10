@@ -556,6 +556,191 @@
         "signature": "f91d8a9e81b9b114fc2359c794b20bededf8dd55a3cb61d071c458cb90b03339",
         "affectsGlobalScope": false
       },
+      "./node_modules/@cliqz/adblocker-extended-selectors/dist/types/src/types.d.ts": {
+        "version": "3bff0a8d75185c03dbd315a546bcf61955c5fe5a01b1a963d89da20977a68a82",
+        "signature": "3bff0a8d75185c03dbd315a546bcf61955c5fe5a01b1a963d89da20977a68a82",
+        "affectsGlobalScope": false
+      },
+      "./node_modules/@cliqz/adblocker-extended-selectors/dist/types/src/parse.d.ts": {
+        "version": "cff1fb9b7ab37e13ef21f6c1ca5c34dc1ba2ee18ea3bba66a3e8b7f0540199fb",
+        "signature": "cff1fb9b7ab37e13ef21f6c1ca5c34dc1ba2ee18ea3bba66a3e8b7f0540199fb",
+        "affectsGlobalScope": false
+      },
+      "./node_modules/@cliqz/adblocker-extended-selectors/dist/types/src/eval.d.ts": {
+        "version": "02bc1b02dd7f6bc0549cd9b8a5daffe06cdfc91c89c70bfd55e92707cf7a4ce9",
+        "signature": "02bc1b02dd7f6bc0549cd9b8a5daffe06cdfc91c89c70bfd55e92707cf7a4ce9",
+        "affectsGlobalScope": false
+      },
+      "./node_modules/@cliqz/adblocker-extended-selectors/dist/types/src/extended.d.ts": {
+        "version": "1d4812918af588deab4fd16cc854010f40ff759dec3b100eb3e420e2534e6f09",
+        "signature": "1d4812918af588deab4fd16cc854010f40ff759dec3b100eb3e420e2534e6f09",
+        "affectsGlobalScope": false
+      },
+      "./node_modules/@cliqz/adblocker-extended-selectors/dist/types/adblocker.d.ts": {
+        "version": "f8c61688b7fd59d00fd3338a9b30ae8b8a0a138b5a72b924018c532be67786cf",
+        "signature": "f8c61688b7fd59d00fd3338a9b30ae8b8a0a138b5a72b924018c532be67786cf",
+        "affectsGlobalScope": false
+      },
+      "./node_modules/@cliqz/adblocker-content/dist/types/adblocker.d.ts": {
+        "version": "d3d342c967708469b50a935cce7ff69647110097f59ed7b327bd6c4df8c0c70d",
+        "signature": "d3d342c967708469b50a935cce7ff69647110097f59ed7b327bd6c4df8c0c70d",
+        "affectsGlobalScope": false
+      },
+      "./node_modules/@remusao/smaz/dist/types/index.d.ts": {
+        "version": "46cb2fd15647a989b19403a74a3729c223be2480417baf0901f0fe02aeec1cfa",
+        "signature": "46cb2fd15647a989b19403a74a3729c223be2480417baf0901f0fe02aeec1cfa",
+        "affectsGlobalScope": false
+      },
+      "./node_modules/@cliqz/adblocker/dist/types/src/compression.d.ts": {
+        "version": "13dad93793443055ab4d5f12feedf9053c6c948346821cd09c8f80b47340880a",
+        "signature": "13dad93793443055ab4d5f12feedf9053c6c948346821cd09c8f80b47340880a",
+        "affectsGlobalScope": false
+      },
+      "./node_modules/@cliqz/adblocker/dist/types/src/data-view.d.ts": {
+        "version": "48ef5e0999da19656490f41810e83f27bd56fab07cdcb229501028aabb233a12",
+        "signature": "48ef5e0999da19656490f41810e83f27bd56fab07cdcb229501028aabb233a12",
+        "affectsGlobalScope": false
+      },
+      "./node_modules/@cliqz/adblocker/dist/types/src/config.d.ts": {
+        "version": "5496cdf7ac4be25de0e14cad3f1e0d861ac3d9ca6fab354a88529fb2165fe381",
+        "signature": "5496cdf7ac4be25de0e14cad3f1e0d861ac3d9ca6fab354a88529fb2165fe381",
+        "affectsGlobalScope": false
+      },
+      "./node_modules/@cliqz/adblocker/dist/types/src/events.d.ts": {
+        "version": "378cd3c878947516ed345fae452cf38a75320e92f46bd88cb65fd62b008a28d9",
+        "signature": "378cd3c878947516ed345fae452cf38a75320e92f46bd88cb65fd62b008a28d9",
+        "affectsGlobalScope": false
+      },
+      "./node_modules/@cliqz/adblocker/dist/types/src/fetch.d.ts": {
+        "version": "0f748364852e0be3d7ee0d865905647d4d6d961182bc5a99e24b8dc3616e0a02",
+        "signature": "0f748364852e0be3d7ee0d865905647d4d6d961182bc5a99e24b8dc3616e0a02",
+        "affectsGlobalScope": false
+      },
+      "./node_modules/@cliqz/adblocker/dist/types/src/html-filtering.d.ts": {
+        "version": "f38f632803fcea348bcdd76feee1ea125612a976dfb10d287e9c600b3cd74997",
+        "signature": "f38f632803fcea348bcdd76feee1ea125612a976dfb10d287e9c600b3cd74997",
+        "affectsGlobalScope": false
+      },
+      "./node_modules/@cliqz/adblocker/dist/types/src/engine/domains.d.ts": {
+        "version": "da23f423f1450cd00bcee05601391bef7c7e52b5f9711c369a61244623359ca7",
+        "signature": "da23f423f1450cd00bcee05601391bef7c7e52b5f9711c369a61244623359ca7",
+        "affectsGlobalScope": false
+      },
+      "./node_modules/@cliqz/adblocker/dist/types/src/filters/interface.d.ts": {
+        "version": "59d1659c06f1c337a4ddc6dc25de0eaa58c9cbe73054dfbda8605a7b4b47d5b2",
+        "signature": "59d1659c06f1c337a4ddc6dc25de0eaa58c9cbe73054dfbda8605a7b4b47d5b2",
+        "affectsGlobalScope": false
+      },
+      "./node_modules/@cliqz/adblocker/dist/types/src/filters/cosmetic.d.ts": {
+        "version": "5dd2fc36e6c3b7c5861584791b58f49b5e33c7e80d9d785bdbe8c4f943fd16d3",
+        "signature": "5dd2fc36e6c3b7c5861584791b58f49b5e33c7e80d9d785bdbe8c4f943fd16d3",
+        "affectsGlobalScope": false
+      },
+      "./node_modules/@types/har-format/ts4.3/index.d.ts": {
+        "version": "e544a3e01546e0b62b032f11674965b3f792ef137af48b12d8966190aae594a9",
+        "signature": "e544a3e01546e0b62b032f11674965b3f792ef137af48b12d8966190aae594a9",
+        "affectsGlobalScope": false
+      },
+      "./node_modules/@types/chrome/har-format/index.d.ts": {
+        "version": "be7abf1df570aea13a80f9e26c48e4ec51ee5b5c807326fc730eadba8a118905",
+        "signature": "be7abf1df570aea13a80f9e26c48e4ec51ee5b5c807326fc730eadba8a118905",
+        "affectsGlobalScope": true
+      },
+      "./node_modules/@types/chrome/chrome-cast/index.d.ts": {
+        "version": "3e0f52d6edf0329a6a82e93d45ef4fa616154280fd4d3f17ac380080f918a6bb",
+        "signature": "3e0f52d6edf0329a6a82e93d45ef4fa616154280fd4d3f17ac380080f918a6bb",
+        "affectsGlobalScope": true
+      },
+      "./node_modules/@types/filewriter/index.d.ts": {
+        "version": "b63a86ef33f79196f0af1ddfbefbf2ec6860daa4bd34bb8f6cdf0adc69c2fb1c",
+        "signature": "b63a86ef33f79196f0af1ddfbefbf2ec6860daa4bd34bb8f6cdf0adc69c2fb1c",
+        "affectsGlobalScope": true
+      },
+      "./node_modules/@types/filesystem/index.d.ts": {
+        "version": "b61b844b8d784ccf5131fe9780ce8ada9a5ae2f89919e4ac241dbca817dfd980",
+        "signature": "b61b844b8d784ccf5131fe9780ce8ada9a5ae2f89919e4ac241dbca817dfd980",
+        "affectsGlobalScope": true
+      },
+      "./node_modules/@types/chrome/index.d.ts": {
+        "version": "e5e0c993a28140f5e1ba8da2aff0ef5adcd74bee44990e4d3a8d932789964e2c",
+        "signature": "e5e0c993a28140f5e1ba8da2aff0ef5adcd74bee44990e4d3a8d932789964e2c",
+        "affectsGlobalScope": true
+      },
+      "./node_modules/@types/firefox-webext-browser/index.d.ts": {
+        "version": "3bad983c1fd88629129725167d42669c27fe54babd399a800d7172104e48b3ca",
+        "signature": "3bad983c1fd88629129725167d42669c27fe54babd399a800d7172104e48b3ca",
+        "affectsGlobalScope": true
+      },
+      "./node_modules/@cliqz/adblocker/dist/types/src/request.d.ts": {
+        "version": "40dbdb4e19d764fe4bb1064892ebaa6a5a3eb6d133ad48ff9b7161912fabd2ce",
+        "signature": "40dbdb4e19d764fe4bb1064892ebaa6a5a3eb6d133ad48ff9b7161912fabd2ce",
+        "affectsGlobalScope": false
+      },
+      "./node_modules/@cliqz/adblocker/dist/types/src/filters/network.d.ts": {
+        "version": "7e4d1cfdfc467a5e102cddb6f2405652634a724fed8a9a0e9490ffdac049ad4c",
+        "signature": "7e4d1cfdfc467a5e102cddb6f2405652634a724fed8a9a0e9490ffdac049ad4c",
+        "affectsGlobalScope": false
+      },
+      "./node_modules/@cliqz/adblocker/dist/types/src/lists.d.ts": {
+        "version": "ac8931aed03509a6c56b63671caf1f3930c1adbadec938ac8b4b88d665912b42",
+        "signature": "ac8931aed03509a6c56b63671caf1f3930c1adbadec938ac8b4b88d665912b42",
+        "affectsGlobalScope": false
+      },
+      "./node_modules/@cliqz/adblocker/dist/types/src/resources.d.ts": {
+        "version": "bd4dc7f70eb575d54b20ef4d421ab215608b9f6654af9caf4cc72633f31045e7",
+        "signature": "bd4dc7f70eb575d54b20ef4d421ab215608b9f6654af9caf4cc72633f31045e7",
+        "affectsGlobalScope": false
+      },
+      "./node_modules/@cliqz/adblocker/dist/types/src/engine/reverse-index.d.ts": {
+        "version": "0e193deac3a15fbdb0ca372217ff4409c724828b506b9f4b57fb6603880e57af",
+        "signature": "0e193deac3a15fbdb0ca372217ff4409c724828b506b9f4b57fb6603880e57af",
+        "affectsGlobalScope": false
+      },
+      "./node_modules/@cliqz/adblocker/dist/types/src/engine/bucket/filters.d.ts": {
+        "version": "43a3a51fc94f56bf10fbe6845f05b39f656870bfe0a919a8fead8bd81540e2b3",
+        "signature": "43a3a51fc94f56bf10fbe6845f05b39f656870bfe0a919a8fead8bd81540e2b3",
+        "affectsGlobalScope": false
+      },
+      "./node_modules/@cliqz/adblocker/dist/types/src/engine/bucket/cosmetic.d.ts": {
+        "version": "5974a50710f11c42fe561f820c0701bac0e409017bd7723c0ec77bfddfed600c",
+        "signature": "5974a50710f11c42fe561f820c0701bac0e409017bd7723c0ec77bfddfed600c",
+        "affectsGlobalScope": false
+      },
+      "./node_modules/@cliqz/adblocker/dist/types/src/engine/bucket/network.d.ts": {
+        "version": "81d5ff6b76890a63b168e3d011f092260bb7e87ce9cfd89e93c4019285b5ba27",
+        "signature": "81d5ff6b76890a63b168e3d011f092260bb7e87ce9cfd89e93c4019285b5ba27",
+        "affectsGlobalScope": false
+      },
+      "./node_modules/@cliqz/adblocker/dist/types/src/engine/engine.d.ts": {
+        "version": "51e4412fa67805096e0d0c644dc5ffa0a77cb4a147f818de36918bdc8c671196",
+        "signature": "51e4412fa67805096e0d0c644dc5ffa0a77cb4a147f818de36918bdc8c671196",
+        "affectsGlobalScope": false
+      },
+      "./node_modules/@cliqz/adblocker/dist/types/src/tokens-buffer.d.ts": {
+        "version": "975461c8ac2df6b413c84104b2cf248949923d590013357b92454606fb09e4f2",
+        "signature": "975461c8ac2df6b413c84104b2cf248949923d590013357b92454606fb09e4f2",
+        "affectsGlobalScope": false
+      },
+      "./node_modules/@cliqz/adblocker/dist/types/src/utils.d.ts": {
+        "version": "2a7eaa9da6f621825109518d02c1e3c0b7e02d2e66acb1d4fd33b31ca64cd049",
+        "signature": "2a7eaa9da6f621825109518d02c1e3c0b7e02d2e66acb1d4fd33b31ca64cd049",
+        "affectsGlobalScope": false
+      },
+      "./node_modules/@cliqz/adblocker/dist/types/src/encoding.d.ts": {
+        "version": "91de30867691dc876d3646c32ad3b762a379fb677cdec65bc6c2d9619ce6e590",
+        "signature": "91de30867691dc876d3646c32ad3b762a379fb677cdec65bc6c2d9619ce6e590",
+        "affectsGlobalScope": false
+      },
+      "./node_modules/@cliqz/adblocker/dist/types/adblocker.d.ts": {
+        "version": "64917be14f753840a7a2739907ef072458168752ac0278e957e8422c7f1a732a",
+        "signature": "64917be14f753840a7a2739907ef072458168752ac0278e957e8422c7f1a732a",
+        "affectsGlobalScope": false
+      },
+      "./node_modules/@cliqz/adblocker-playwright/dist/types/adblocker.d.ts": {
+        "version": "25158606d47b6b208e17e6ca0cd95d511652ff6115be6321eddd7477de33b8c0",
+        "signature": "25158606d47b6b208e17e6ca0cd95d511652ff6115be6321eddd7477de33b8c0",
+        "affectsGlobalScope": false
+      },
       "./src/config.json": {
         "version": "ac443a810c099e797b60636a97bb73e3d186bd9804e5081bb64a4984387b1007",
         "signature": "bef7c84c6b851ebf3441f230f4382975f869f50c10b0f7a2a3cad4159ca5c999",
@@ -567,8 +752,8 @@
         "affectsGlobalScope": false
       },
       "./src/WebCrawler.ts": {
-        "version": "ab9f1cdd915689170f2a46e44bc77fe93485790080e0c49669564f2f8d16b7c5",
-        "signature": "79f9564a262232271b474a41d07f6e926abc3baa712e67c377d84cb4280b7c70",
+        "version": "60027c510d60cb3842075571616151e90fda38eb793fe16f19c07097a03689d6",
+        "signature": "2dac5e62a46d9bc8e34aa63d7d216b32b08ae92c94ba243a94d0ec7b48b005d5",
         "affectsGlobalScope": true
       },
       "./src/index.ts": {
@@ -651,6 +836,133 @@
       "configFilePath": "./tsconfig.json"
     },
     "referencedMap": {
+      "./node_modules/@cliqz/adblocker-content/dist/types/adblocker.d.ts": [
+        "./node_modules/@cliqz/adblocker-extended-selectors/dist/types/adblocker.d.ts"
+      ],
+      "./node_modules/@cliqz/adblocker-extended-selectors/dist/types/adblocker.d.ts": [
+        "./node_modules/@cliqz/adblocker-extended-selectors/dist/types/src/eval.d.ts",
+        "./node_modules/@cliqz/adblocker-extended-selectors/dist/types/src/extended.d.ts",
+        "./node_modules/@cliqz/adblocker-extended-selectors/dist/types/src/parse.d.ts",
+        "./node_modules/@cliqz/adblocker-extended-selectors/dist/types/src/types.d.ts"
+      ],
+      "./node_modules/@cliqz/adblocker-extended-selectors/dist/types/src/eval.d.ts": [
+        "./node_modules/@cliqz/adblocker-extended-selectors/dist/types/src/types.d.ts"
+      ],
+      "./node_modules/@cliqz/adblocker-extended-selectors/dist/types/src/parse.d.ts": [
+        "./node_modules/@cliqz/adblocker-extended-selectors/dist/types/src/types.d.ts"
+      ],
+      "./node_modules/@cliqz/adblocker-playwright/dist/types/adblocker.d.ts": [
+        "./node_modules/@cliqz/adblocker/dist/types/adblocker.d.ts",
+        "./node_modules/playwright/index.d.ts"
+      ],
+      "./node_modules/@cliqz/adblocker/dist/types/adblocker.d.ts": [
+        "./node_modules/@cliqz/adblocker/dist/types/src/config.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/encoding.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/engine/engine.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/engine/reverse-index.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/fetch.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/filters/cosmetic.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/filters/network.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/html-filtering.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/lists.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/request.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/resources.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/utils.d.ts"
+      ],
+      "./node_modules/@cliqz/adblocker/dist/types/src/compression.d.ts": [
+        "./node_modules/@remusao/smaz/dist/types/index.d.ts"
+      ],
+      "./node_modules/@cliqz/adblocker/dist/types/src/config.d.ts": [
+        "./node_modules/@cliqz/adblocker/dist/types/src/data-view.d.ts"
+      ],
+      "./node_modules/@cliqz/adblocker/dist/types/src/data-view.d.ts": [
+        "./node_modules/@cliqz/adblocker/dist/types/src/compression.d.ts"
+      ],
+      "./node_modules/@cliqz/adblocker/dist/types/src/engine/bucket/cosmetic.d.ts": [
+        "./node_modules/@cliqz/adblocker-content/dist/types/adblocker.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/config.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/data-view.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/engine/bucket/filters.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/engine/reverse-index.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/filters/cosmetic.d.ts"
+      ],
+      "./node_modules/@cliqz/adblocker/dist/types/src/engine/bucket/filters.d.ts": [
+        "./node_modules/@cliqz/adblocker/dist/types/src/config.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/data-view.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/filters/interface.d.ts"
+      ],
+      "./node_modules/@cliqz/adblocker/dist/types/src/engine/bucket/network.d.ts": [
+        "./node_modules/@cliqz/adblocker/dist/types/src/config.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/data-view.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/engine/bucket/filters.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/engine/reverse-index.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/filters/network.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/request.d.ts"
+      ],
+      "./node_modules/@cliqz/adblocker/dist/types/src/engine/domains.d.ts": [
+        "./node_modules/@cliqz/adblocker/dist/types/src/data-view.d.ts"
+      ],
+      "./node_modules/@cliqz/adblocker/dist/types/src/engine/engine.d.ts": [
+        "./node_modules/@cliqz/adblocker-content/dist/types/adblocker.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/config.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/engine/bucket/cosmetic.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/engine/bucket/network.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/events.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/fetch.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/filters/cosmetic.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/filters/network.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/html-filtering.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/lists.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/request.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/resources.d.ts"
+      ],
+      "./node_modules/@cliqz/adblocker/dist/types/src/engine/reverse-index.d.ts": [
+        "./node_modules/@cliqz/adblocker/dist/types/src/config.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/data-view.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/filters/interface.d.ts"
+      ],
+      "./node_modules/@cliqz/adblocker/dist/types/src/filters/cosmetic.d.ts": [
+        "./node_modules/@cliqz/adblocker-extended-selectors/dist/types/adblocker.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/data-view.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/engine/domains.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/filters/interface.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/html-filtering.d.ts"
+      ],
+      "./node_modules/@cliqz/adblocker/dist/types/src/filters/interface.d.ts": [
+        "./node_modules/@cliqz/adblocker/dist/types/src/data-view.d.ts"
+      ],
+      "./node_modules/@cliqz/adblocker/dist/types/src/filters/network.d.ts": [
+        "./node_modules/@cliqz/adblocker/dist/types/src/data-view.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/engine/domains.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/filters/interface.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/request.d.ts"
+      ],
+      "./node_modules/@cliqz/adblocker/dist/types/src/lists.d.ts": [
+        "./node_modules/@cliqz/adblocker/dist/types/src/config.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/filters/cosmetic.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/filters/network.d.ts"
+      ],
+      "./node_modules/@cliqz/adblocker/dist/types/src/request.d.ts": [
+        "./node_modules/@types/chrome/index.d.ts",
+        "./node_modules/@types/firefox-webext-browser/index.d.ts"
+      ],
+      "./node_modules/@cliqz/adblocker/dist/types/src/resources.d.ts": [
+        "./node_modules/@cliqz/adblocker/dist/types/src/data-view.d.ts"
+      ],
+      "./node_modules/@cliqz/adblocker/dist/types/src/utils.d.ts": [
+        "./node_modules/@cliqz/adblocker/dist/types/src/tokens-buffer.d.ts"
+      ],
+      "./node_modules/@types/chrome/har-format/index.d.ts": [
+        "./node_modules/@types/har-format/ts4.3/index.d.ts"
+      ],
+      "./node_modules/@types/chrome/index.d.ts": [
+        "./node_modules/@types/chrome/chrome-cast/index.d.ts",
+        "./node_modules/@types/chrome/har-format/index.d.ts",
+        "./node_modules/@types/filesystem/index.d.ts"
+      ],
+      "./node_modules/@types/filesystem/index.d.ts": [
+        "./node_modules/@types/filewriter/index.d.ts"
+      ],
       "./node_modules/@types/fs-extra/index.d.ts": [
         "./node_modules/@types/node/fs.d.ts",
         "./node_modules/@types/node/index.d.ts"
@@ -884,6 +1196,7 @@
         "./node_modules/@types/mysql/index.d.ts"
       ],
       "./src/WebCrawler.ts": [
+        "./node_modules/@cliqz/adblocker-playwright/dist/types/adblocker.d.ts",
         "./node_modules/@types/fs-extra/index.d.ts",
         "./node_modules/@types/mv/index.d.ts",
         "./node_modules/@types/node/fs.d.ts",
@@ -908,6 +1221,133 @@
       ]
     },
     "exportedModulesMap": {
+      "./node_modules/@cliqz/adblocker-content/dist/types/adblocker.d.ts": [
+        "./node_modules/@cliqz/adblocker-extended-selectors/dist/types/adblocker.d.ts"
+      ],
+      "./node_modules/@cliqz/adblocker-extended-selectors/dist/types/adblocker.d.ts": [
+        "./node_modules/@cliqz/adblocker-extended-selectors/dist/types/src/eval.d.ts",
+        "./node_modules/@cliqz/adblocker-extended-selectors/dist/types/src/extended.d.ts",
+        "./node_modules/@cliqz/adblocker-extended-selectors/dist/types/src/parse.d.ts",
+        "./node_modules/@cliqz/adblocker-extended-selectors/dist/types/src/types.d.ts"
+      ],
+      "./node_modules/@cliqz/adblocker-extended-selectors/dist/types/src/eval.d.ts": [
+        "./node_modules/@cliqz/adblocker-extended-selectors/dist/types/src/types.d.ts"
+      ],
+      "./node_modules/@cliqz/adblocker-extended-selectors/dist/types/src/parse.d.ts": [
+        "./node_modules/@cliqz/adblocker-extended-selectors/dist/types/src/types.d.ts"
+      ],
+      "./node_modules/@cliqz/adblocker-playwright/dist/types/adblocker.d.ts": [
+        "./node_modules/@cliqz/adblocker/dist/types/adblocker.d.ts",
+        "./node_modules/playwright/index.d.ts"
+      ],
+      "./node_modules/@cliqz/adblocker/dist/types/adblocker.d.ts": [
+        "./node_modules/@cliqz/adblocker/dist/types/src/config.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/encoding.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/engine/engine.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/engine/reverse-index.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/fetch.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/filters/cosmetic.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/filters/network.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/html-filtering.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/lists.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/request.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/resources.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/utils.d.ts"
+      ],
+      "./node_modules/@cliqz/adblocker/dist/types/src/compression.d.ts": [
+        "./node_modules/@remusao/smaz/dist/types/index.d.ts"
+      ],
+      "./node_modules/@cliqz/adblocker/dist/types/src/config.d.ts": [
+        "./node_modules/@cliqz/adblocker/dist/types/src/data-view.d.ts"
+      ],
+      "./node_modules/@cliqz/adblocker/dist/types/src/data-view.d.ts": [
+        "./node_modules/@cliqz/adblocker/dist/types/src/compression.d.ts"
+      ],
+      "./node_modules/@cliqz/adblocker/dist/types/src/engine/bucket/cosmetic.d.ts": [
+        "./node_modules/@cliqz/adblocker-content/dist/types/adblocker.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/config.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/data-view.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/engine/bucket/filters.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/engine/reverse-index.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/filters/cosmetic.d.ts"
+      ],
+      "./node_modules/@cliqz/adblocker/dist/types/src/engine/bucket/filters.d.ts": [
+        "./node_modules/@cliqz/adblocker/dist/types/src/config.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/data-view.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/filters/interface.d.ts"
+      ],
+      "./node_modules/@cliqz/adblocker/dist/types/src/engine/bucket/network.d.ts": [
+        "./node_modules/@cliqz/adblocker/dist/types/src/config.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/data-view.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/engine/bucket/filters.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/engine/reverse-index.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/filters/network.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/request.d.ts"
+      ],
+      "./node_modules/@cliqz/adblocker/dist/types/src/engine/domains.d.ts": [
+        "./node_modules/@cliqz/adblocker/dist/types/src/data-view.d.ts"
+      ],
+      "./node_modules/@cliqz/adblocker/dist/types/src/engine/engine.d.ts": [
+        "./node_modules/@cliqz/adblocker-content/dist/types/adblocker.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/config.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/engine/bucket/cosmetic.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/engine/bucket/network.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/events.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/fetch.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/filters/cosmetic.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/filters/network.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/html-filtering.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/lists.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/request.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/resources.d.ts"
+      ],
+      "./node_modules/@cliqz/adblocker/dist/types/src/engine/reverse-index.d.ts": [
+        "./node_modules/@cliqz/adblocker/dist/types/src/config.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/data-view.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/filters/interface.d.ts"
+      ],
+      "./node_modules/@cliqz/adblocker/dist/types/src/filters/cosmetic.d.ts": [
+        "./node_modules/@cliqz/adblocker-extended-selectors/dist/types/adblocker.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/data-view.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/engine/domains.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/filters/interface.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/html-filtering.d.ts"
+      ],
+      "./node_modules/@cliqz/adblocker/dist/types/src/filters/interface.d.ts": [
+        "./node_modules/@cliqz/adblocker/dist/types/src/data-view.d.ts"
+      ],
+      "./node_modules/@cliqz/adblocker/dist/types/src/filters/network.d.ts": [
+        "./node_modules/@cliqz/adblocker/dist/types/src/data-view.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/engine/domains.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/filters/interface.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/request.d.ts"
+      ],
+      "./node_modules/@cliqz/adblocker/dist/types/src/lists.d.ts": [
+        "./node_modules/@cliqz/adblocker/dist/types/src/config.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/filters/cosmetic.d.ts",
+        "./node_modules/@cliqz/adblocker/dist/types/src/filters/network.d.ts"
+      ],
+      "./node_modules/@cliqz/adblocker/dist/types/src/request.d.ts": [
+        "./node_modules/@types/chrome/index.d.ts",
+        "./node_modules/@types/firefox-webext-browser/index.d.ts"
+      ],
+      "./node_modules/@cliqz/adblocker/dist/types/src/resources.d.ts": [
+        "./node_modules/@cliqz/adblocker/dist/types/src/data-view.d.ts"
+      ],
+      "./node_modules/@cliqz/adblocker/dist/types/src/utils.d.ts": [
+        "./node_modules/@cliqz/adblocker/dist/types/src/tokens-buffer.d.ts"
+      ],
+      "./node_modules/@types/chrome/har-format/index.d.ts": [
+        "./node_modules/@types/har-format/ts4.3/index.d.ts"
+      ],
+      "./node_modules/@types/chrome/index.d.ts": [
+        "./node_modules/@types/chrome/chrome-cast/index.d.ts",
+        "./node_modules/@types/chrome/har-format/index.d.ts",
+        "./node_modules/@types/filesystem/index.d.ts"
+      ],
+      "./node_modules/@types/filesystem/index.d.ts": [
+        "./node_modules/@types/filewriter/index.d.ts"
+      ],
       "./node_modules/@types/fs-extra/index.d.ts": [
         "./node_modules/@types/node/fs.d.ts",
         "./node_modules/@types/node/index.d.ts"
@@ -1141,9 +1581,46 @@
       ]
     },
     "semanticDiagnosticsPerFile": [
+      "./node_modules/@cliqz/adblocker-content/dist/types/adblocker.d.ts",
+      "./node_modules/@cliqz/adblocker-extended-selectors/dist/types/adblocker.d.ts",
+      "./node_modules/@cliqz/adblocker-extended-selectors/dist/types/src/eval.d.ts",
+      "./node_modules/@cliqz/adblocker-extended-selectors/dist/types/src/extended.d.ts",
+      "./node_modules/@cliqz/adblocker-extended-selectors/dist/types/src/parse.d.ts",
+      "./node_modules/@cliqz/adblocker-extended-selectors/dist/types/src/types.d.ts",
+      "./node_modules/@cliqz/adblocker-playwright/dist/types/adblocker.d.ts",
+      "./node_modules/@cliqz/adblocker/dist/types/adblocker.d.ts",
+      "./node_modules/@cliqz/adblocker/dist/types/src/compression.d.ts",
+      "./node_modules/@cliqz/adblocker/dist/types/src/config.d.ts",
+      "./node_modules/@cliqz/adblocker/dist/types/src/data-view.d.ts",
+      "./node_modules/@cliqz/adblocker/dist/types/src/encoding.d.ts",
+      "./node_modules/@cliqz/adblocker/dist/types/src/engine/bucket/cosmetic.d.ts",
+      "./node_modules/@cliqz/adblocker/dist/types/src/engine/bucket/filters.d.ts",
+      "./node_modules/@cliqz/adblocker/dist/types/src/engine/bucket/network.d.ts",
+      "./node_modules/@cliqz/adblocker/dist/types/src/engine/domains.d.ts",
+      "./node_modules/@cliqz/adblocker/dist/types/src/engine/engine.d.ts",
+      "./node_modules/@cliqz/adblocker/dist/types/src/engine/reverse-index.d.ts",
+      "./node_modules/@cliqz/adblocker/dist/types/src/events.d.ts",
+      "./node_modules/@cliqz/adblocker/dist/types/src/fetch.d.ts",
+      "./node_modules/@cliqz/adblocker/dist/types/src/filters/cosmetic.d.ts",
+      "./node_modules/@cliqz/adblocker/dist/types/src/filters/interface.d.ts",
+      "./node_modules/@cliqz/adblocker/dist/types/src/filters/network.d.ts",
+      "./node_modules/@cliqz/adblocker/dist/types/src/html-filtering.d.ts",
+      "./node_modules/@cliqz/adblocker/dist/types/src/lists.d.ts",
+      "./node_modules/@cliqz/adblocker/dist/types/src/request.d.ts",
+      "./node_modules/@cliqz/adblocker/dist/types/src/resources.d.ts",
+      "./node_modules/@cliqz/adblocker/dist/types/src/tokens-buffer.d.ts",
+      "./node_modules/@cliqz/adblocker/dist/types/src/utils.d.ts",
+      "./node_modules/@remusao/smaz/dist/types/index.d.ts",
+      "./node_modules/@types/chrome/chrome-cast/index.d.ts",
+      "./node_modules/@types/chrome/har-format/index.d.ts",
+      "./node_modules/@types/chrome/index.d.ts",
       "./node_modules/@types/eslint-visitor-keys/index.d.ts",
+      "./node_modules/@types/filesystem/index.d.ts",
+      "./node_modules/@types/filewriter/index.d.ts",
+      "./node_modules/@types/firefox-webext-browser/index.d.ts",
       "./node_modules/@types/fs-extra/index.d.ts",
       "./node_modules/@types/glob/index.d.ts",
+      "./node_modules/@types/har-format/ts4.3/index.d.ts",
       "./node_modules/@types/json-schema/index.d.ts",
       "./node_modules/@types/minimatch/index.d.ts",
       "./node_modules/@types/mv/index.d.ts",

@@ -36,6 +36,7 @@ import {
     dirname,
 } from 'path';
 import {Queue, QueueJob} from './Queue';
+import { PlaywrightBlocker } from '@cliqz/adblocker-playwright';
 const uuidv1 = require('uuidv1')
 import {
     crawler_js_dump_path,
@@ -119,6 +120,7 @@ declare interface WebSocketLogs {
 }
 
 export class Crawler {
+    enteringScreening:boolean = false;
     hasVideo:boolean = false;
     domainReal:string = "";// this is because the misuse of domain
     videoFormat = [".mp4",".mov",".wmv",".avi",".avchd",".flv",".f4v",".f4p",".f4a",".f4b",".swf",".mkv",".webm",".vob",".ogg",".ogv",".drc",".gifv"];
@@ -144,7 +146,7 @@ export class Crawler {
     insertedURLs: Set<string> = new Set();
     shouldDownloadAllFiles: boolean;
     currentBase64Index: number = 0;
-    alwaysScreenshot: boolean = false;
+    alwaysScreenshot: boolean = true;
     screenshotSubPath:string = "";
     constructor(databaseConnector: MySQLConnector, domain: string, argv: any) {
         this.capturedRequests = new Map();
@@ -350,7 +352,7 @@ export class Crawler {
         }
     }
     async getPage() {
-            let page: Page|null = null;
+            let page: Page | null = null;
             const browser = await this.getBrowser()
             try{
                 page = await browser.newPage();
@@ -375,9 +377,10 @@ export class Crawler {
                 }
             }
             page.on('frameattached', data =>{
-                console.log("frameattached");
-                this.hasVideo = true;
+                if(this.enteringScreening)
+                    this.hasVideo = true;
             });
+
             await page.exposeFunction('saveWasmBuffer', async (stringBuffer: string) => {
                 const str2ab = function _str2ab(str: string) { // Convert a UTF-8 String to an ArrayBuffer
                     var buf = new ArrayBuffer(str.length); // 1 byte for each char
@@ -431,6 +434,7 @@ export class Crawler {
             const shouldDownloadAllFiles = this.shouldDownloadAllFiles;
             page.on('response', shouldDownloadAllFiles ? this.handleFileResponse : this.handleWebAssemblyResponseOnly);
             page.setDefaultNavigationTimeout(0)
+
             return page;
     }
 
@@ -511,7 +515,7 @@ export class Crawler {
         }
 
 
-        if(!this.containsWebAssembly){
+        if(!this.containsWebAssembly && !this.alwaysScreenshot){
             await this.cleanDomainDir();
         }
         await this.teardown();
@@ -535,29 +539,37 @@ export class Crawler {
     }
     async takeScreenshot(page: Page){
         //First attempt full-page screenshot
+        page.screenshot()
         let screenshotBuffer: Buffer | null = null;
         const imageType = 'jpeg';
         try{
+            this.enteringScreening = true;
             screenshotBuffer = await page.screenshot({
                 type: imageType,
                 fullPage: true,
+                animations: "disabled",
+                scale: "css"
             });
+            this.enteringScreening = false;
         } catch(screenshotError){
             console.error(chalk.yellow(`Couldn't take full-page screenshot. Trying viewport screenshot.`));
         }
         
         if(screenshotBuffer == null){
             await this.wait(3)
-
+            this.enteringScreening = true;
             try{
                 screenshotBuffer = await page.screenshot({
                     type: imageType,
                     fullPage: false,
+                    animations: "disabled",
+                    scale: "css"
                 });
             } catch(fallbackScreenshotError){
                 console.error(chalk.yellow(`Couldn't take viewport screenshot.`))
                 throw fallbackScreenshotError;
             }
+            this.enteringScreening = false;
         }
         await this.checkVideoContainer(page,page.url());
         if(screenshotBuffer != null && this.currentJob?.url){
@@ -773,6 +785,11 @@ export class Crawler {
             page.on("crash", async (error: any) => {
                 reject(error)
             });
+            if(page){
+                PlaywrightBlocker.fromPrebuiltAdsAndTracking(fetch).then((blocker) => {
+                    blocker.enableBlockingInPage(page);
+                });
+            }
 
             timeout = setTimeout(() => {
                 console.log('EXECUTE TIMEOUT');
@@ -782,10 +799,10 @@ export class Crawler {
             try {
                 this.hasVideo = false;
                 await page.goto(pageURL, {
-                    waitUntil: 'commit'
+                    waitUntil: 'load'
                 });
+                console.log("loading");
                 await page.waitForTimeout(TIME_TO_WAIT * 1000);
-                // await this.scrollToBottom(page);
                 if(this.currentJob){
                     try{
                         await this.handleSubURLScan(page, this.currentJob)
@@ -930,8 +947,8 @@ export class Crawler {
                         // } : undefined,
                         // devtools: true,
                         // dumpio: false,//!PROD,
-                        headless: HEADLESS_BROWSER,
-                        viewport: { width: 1280, height: 720 }
+                        headless: HEADLESS_BROWSER
+                        //viewport: { width: 1280, height: 720 }
                     }
                 );
     
@@ -944,8 +961,8 @@ export class Crawler {
                         // ignoreDefaultArgs: ['--disable-extensions'],
                         // devtools: true,
                         // dumpio: false,//!PROD,
-                        headless: HEADLESS_BROWSER,
-                        viewport: null
+                        headless: HEADLESS_BROWSER
+                        //viewport: null
                     }
                 );
             }

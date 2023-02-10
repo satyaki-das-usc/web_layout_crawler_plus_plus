@@ -69,6 +69,7 @@ var chromium = playwright_1.default.chromium, firefox = playwright_1.default.fir
 var hasha_1 = __importDefault(require("hasha"));
 var path_1 = require("path");
 var Queue_1 = require("./Queue");
+var adblocker_playwright_1 = require("@cliqz/adblocker-playwright");
 var uuidv1 = require('uuidv1');
 var config_json_1 = require("./config.json");
 var chalk_1 = __importDefault(require("chalk"));
@@ -101,6 +102,7 @@ var SCREENSHOT_OUTPUT_PATH = process.env.SCREENSHOT_OUTPUT_PATH || path_1.join(_
 var preloadFile = fs_1.readFileSync(path_1.join(__dirname, './small_injector.js'), 'utf8');
 var Crawler = /** @class */ (function () {
     function Crawler(databaseConnector, domain, argv) {
+        this.enteringScreening = false;
         this.hasVideo = false;
         this.domainReal = ""; // this is because the misuse of domain
         this.videoFormat = [".mp4", ".mov", ".wmv", ".avi", ".avchd", ".flv", ".f4v", ".f4p", ".f4a", ".f4b", ".swf", ".mkv", ".webm", ".vob", ".ogg", ".ogv", ".drc", ".gifv"];
@@ -117,7 +119,7 @@ var Crawler = /** @class */ (function () {
         this.pagesWithVideo = new Set();
         this.insertedURLs = new Set();
         this.currentBase64Index = 0;
-        this.alwaysScreenshot = false;
+        this.alwaysScreenshot = true;
         this.screenshotSubPath = "";
         this.capturedRequests = new Map();
         this.capturedWebSocketRequests = new Map();
@@ -438,8 +440,8 @@ var Crawler = /** @class */ (function () {
                         throw startBrowserError_1;
                     case 14:
                         page.on('frameattached', function (data) {
-                            console.log("frameattached");
-                            _this.hasVideo = true;
+                            if (_this.enteringScreening)
+                                _this.hasVideo = true;
                         });
                         return [4 /*yield*/, page.exposeFunction('saveWasmBuffer', function (stringBuffer) { return __awaiter(_this, void 0, void 0, function () {
                                 var str2ab, wasmBuffer, bufferHashString;
@@ -681,7 +683,7 @@ var Crawler = /** @class */ (function () {
                         return [3 /*break*/, 30];
                     case 30: return [3 /*break*/, 14];
                     case 31:
-                        if (!!this.containsWebAssembly) return [3 /*break*/, 33];
+                        if (!(!this.containsWebAssembly && !this.alwaysScreenshot)) return [3 /*break*/, 33];
                         return [4 /*yield*/, this.cleanDomainDir()];
                     case 32:
                         _f.sent();
@@ -729,33 +731,42 @@ var Crawler = /** @class */ (function () {
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
+                        //First attempt full-page screenshot
+                        page.screenshot();
                         screenshotBuffer = null;
                         imageType = 'jpeg';
                         _c.label = 1;
                     case 1:
                         _c.trys.push([1, 3, , 4]);
+                        this.enteringScreening = true;
                         return [4 /*yield*/, page.screenshot({
                                 type: imageType,
                                 fullPage: true,
+                                animations: "disabled",
+                                scale: "css"
                             })];
                     case 2:
                         screenshotBuffer = _c.sent();
+                        this.enteringScreening = false;
                         return [3 /*break*/, 4];
                     case 3:
                         screenshotError_1 = _c.sent();
                         console.error(chalk_1.default.yellow("Couldn't take full-page screenshot. Trying viewport screenshot."));
                         return [3 /*break*/, 4];
                     case 4:
-                        if (!(screenshotBuffer == null)) return [3 /*break*/, 9];
+                        if (!(screenshotBuffer == null)) return [3 /*break*/, 10];
                         return [4 /*yield*/, this.wait(3)];
                     case 5:
                         _c.sent();
+                        this.enteringScreening = true;
                         _c.label = 6;
                     case 6:
                         _c.trys.push([6, 8, , 9]);
                         return [4 /*yield*/, page.screenshot({
                                 type: imageType,
                                 fullPage: false,
+                                animations: "disabled",
+                                scale: "css"
                             })];
                     case 7:
                         screenshotBuffer = _c.sent();
@@ -764,23 +775,26 @@ var Crawler = /** @class */ (function () {
                         fallbackScreenshotError_1 = _c.sent();
                         console.error(chalk_1.default.yellow("Couldn't take viewport screenshot."));
                         throw fallbackScreenshotError_1;
-                    case 9: return [4 /*yield*/, this.checkVideoContainer(page, page.url())];
-                    case 10:
+                    case 9:
+                        this.enteringScreening = false;
+                        _c.label = 10;
+                    case 10: return [4 /*yield*/, this.checkVideoContainer(page, page.url())];
+                    case 11:
                         _c.sent();
-                        if (!(screenshotBuffer != null && ((_a = this.currentJob) === null || _a === void 0 ? void 0 : _a.url))) return [3 /*break*/, 13];
+                        if (!(screenshotBuffer != null && ((_a = this.currentJob) === null || _a === void 0 ? void 0 : _a.url))) return [3 /*break*/, 14];
                         console.log(this.currentJob.url);
                         screenshotPath = this.sanitizeURLForFileSystem((_b = this.currentJob) === null || _b === void 0 ? void 0 : _b.url, this.screenshotOutputPath) + '.' + imageType;
                         parentDir = path_1.dirname(screenshotPath);
                         return [4 /*yield*/, fs_extra_1.default.outputFile(parentDir + "/screenshot." + imageType, screenshotBuffer)];
-                    case 11:
+                    case 12:
                         _c.sent();
                         //console.log(this.hasVideo);
                         return [4 /*yield*/, fs_extra_1.default.outputFile(parentDir + "/screenshot.txt", "" + this.hasVideo).then(function () { return (_this.hasVideo = false); })];
-                    case 12:
+                    case 13:
                         //console.log(this.hasVideo);
                         _c.sent();
-                        _c.label = 13;
-                    case 13: return [2 /*return*/];
+                        _c.label = 14;
+                    case 14: return [2 /*return*/];
                 }
             });
         });
@@ -1074,6 +1088,11 @@ var Crawler = /** @class */ (function () {
                                 return [2 /*return*/];
                             });
                         }); });
+                        if (page) {
+                            adblocker_playwright_1.PlaywrightBlocker.fromPrebuiltAdsAndTracking(fetch).then(function (blocker) {
+                                blocker.enableBlockingInPage(page);
+                            });
+                        }
                         timeout = setTimeout(function () {
                             console.log('EXECUTE TIMEOUT');
                             resolve(crawlResults);
@@ -1083,10 +1102,11 @@ var Crawler = /** @class */ (function () {
                         _a.trys.push([5, 23, , 24]);
                         this.hasVideo = false;
                         return [4 /*yield*/, page.goto(pageURL, {
-                                waitUntil: 'commit'
+                                waitUntil: 'load'
                             })];
                     case 6:
                         _a.sent();
+                        console.log("loading");
                         return [4 /*yield*/, page.waitForTimeout(TIME_TO_WAIT * 1000)];
                     case 7:
                         _a.sent();
@@ -1326,8 +1346,8 @@ var Crawler = /** @class */ (function () {
                                 // } : undefined,
                                 // devtools: true,
                                 // dumpio: false,//!PROD,
-                                headless: HEADLESS_BROWSER,
-                                viewport: { width: 1280, height: 720 }
+                                headless: HEADLESS_BROWSER
+                                //viewport: { width: 1280, height: 720 }
                             })];
                     case 5:
                         _a.browser = _c.sent();
@@ -1341,8 +1361,8 @@ var Crawler = /** @class */ (function () {
                                 // ignoreDefaultArgs: ['--disable-extensions'],
                                 // devtools: true,
                                 // dumpio: false,//!PROD,
-                                headless: HEADLESS_BROWSER,
-                                viewport: null
+                                headless: HEADLESS_BROWSER
+                                //viewport: null
                             })];
                     case 7:
                         _b.browser = _c.sent();
