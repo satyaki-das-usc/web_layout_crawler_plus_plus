@@ -1,10 +1,10 @@
 {
     "mysql_host": "localhost",
     "mysql_user": "root",
-    "mysql_password": "password",
+    "mysql_password": "",
     "mysql_database": "web_layout_crawler",
     "mysql_port": 3306,
-    "max_crawl_depth_level": 1,
+    "max_crawl_depth_level": 0,
     "time_to_wait_on_page": 10,
     "suburl_scan_mode": "full",
     "chromium_path": "../chromium/chrome",

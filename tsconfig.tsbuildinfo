@@ -742,7 +742,7 @@
         "affectsGlobalScope": false
       },
       "./src/config.json": {
-        "version": "ac443a810c099e797b60636a97bb73e3d186bd9804e5081bb64a4984387b1007",
+        "version": "e1bfd06067b69579e7ce71459b335dcee2f97fd54ab41a1c837ad21f5baef8f0",
         "signature": "bef7c84c6b851ebf3441f230f4382975f869f50c10b0f7a2a3cad4159ca5c999",
         "affectsGlobalScope": true
       },
@@ -752,12 +752,12 @@
         "affectsGlobalScope": false
       },
       "./src/WebCrawler.ts": {
-        "version": "60027c510d60cb3842075571616151e90fda38eb793fe16f19c07097a03689d6",
+        "version": "518c13023e2b81605d065a1e6ee3b566a38ce0a9783456398e15491f3fa994e7",
         "signature": "2dac5e62a46d9bc8e34aa63d7d216b32b08ae92c94ba243a94d0ec7b48b005d5",
         "affectsGlobalScope": true
       },
       "./src/index.ts": {
-        "version": "8cf1537f2f331ceeaf846360c6e8d3439a4aa8a9fbfabe1194695d217661a8df",
+        "version": "0898fd438ad92c08573b71db45708f4869b905f9d38103d97d8dac89140e65e1",
         "signature": "8e609bb71c20b858c77f0e9f90bb1319db8477b13f9f965f1a1e18524bf50881",
         "affectsGlobalScope": false
       },

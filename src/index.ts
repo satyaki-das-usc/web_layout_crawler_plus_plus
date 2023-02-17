@@ -5,6 +5,7 @@ import fs from 'fs';
 import util from 'util';
 
 const readFile = util.promisify(fs.readFile);
+const appendFile = util.promisify(fs.appendFile);
 
 const argv = require('yargs')
     .option('url', {
@@ -54,19 +55,35 @@ async function crawlSite(urlToScan: string, database: MySQLConnector){
         const crawler = new Crawler(database, pageURL, argv);
         console.log(`Scanning with ${browser}: WebAssembly Enabled`)
         await crawler.scanPages(browser);
-        crawler.setAlwaysScreenshot();
+        // crawler.setAlwaysScreenshot();
         console.log(`Scanning with ${browser}: WebAssembly Disabled`)
         await crawler.screenshotPagesWithWebAssemblyDisabled(browser);
     }
 }
 
 async function main() {
+    const doneContents = await readFile('done.txt', {encoding: 'utf8'}); 
+    let doneList = doneContents.split('\n')
+                        .map(line => line.trim());
+    const ignoreContents = await readFile('ignorelist.txt', {encoding: 'utf8'}); 
+    let ignoreList = ignoreContents.split('\n')
+                        .map(line => line.trim());
     const db = new MySQLConnector();
     if(argv.file != null ){
         const sitesToScan = await readUrlList(argv.file);
         for(const urlToScan of sitesToScan){
+            if(doneList.indexOf(urlToScan) > -1) {
+                console.log(`Already crawled ${urlToScan}. Skipping.`);
+                continue;
+            }
+            if(ignoreList.indexOf(urlToScan) > -1) {
+                console.log(`Ignoring ${urlToScan}.`);
+                continue;
+            }
             console.log(`${urlToScan}`);
             await crawlSite(urlToScan, db);
+            let length = doneList.push(urlToScan);
+            appendFile('done.txt', `\n${urlToScan}`);
         }
         db.close();
     }

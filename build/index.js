@@ -55,6 +55,7 @@ var WebCrawler_1 = require("./WebCrawler");
 var fs_1 = __importDefault(require("fs"));
 var util_1 = __importDefault(require("util"));
 var readFile = util_1.default.promisify(fs_1.default.readFile);
+var appendFile = util_1.default.promisify(fs_1.default.appendFile);
 var argv = require('yargs')
     .option('url', {
     alias: 'u',
@@ -125,7 +126,7 @@ function crawlSite(urlToScan, database) {
                     return [4 /*yield*/, crawler.scanPages(browser_1)];
                 case 3:
                     _d.sent();
-                    crawler.setAlwaysScreenshot();
+                    // crawler.setAlwaysScreenshot();
                     console.log("Scanning with " + browser_1 + ": WebAssembly Disabled");
                     return [4 /*yield*/, crawler.screenshotPagesWithWebAssemblyDisabled(browser_1)];
                 case 4:
@@ -153,56 +154,75 @@ function crawlSite(urlToScan, database) {
 function main() {
     var _a;
     return __awaiter(this, void 0, void 0, function () {
-        var db, sitesToScan, sitesToScan_1, sitesToScan_1_1, urlToScan, e_2_1, urlToScan;
+        var doneContents, doneList, ignoreContents, ignoreList, db, sitesToScan, sitesToScan_1, sitesToScan_1_1, urlToScan, length_1, e_2_1, urlToScan;
         var e_2, _b;
         return __generator(this, function (_c) {
             switch (_c.label) {
-                case 0:
-                    db = new MySQLConnector_1.MySQLConnector();
-                    if (!(argv.file != null)) return [3 /*break*/, 10];
-                    return [4 /*yield*/, readUrlList(argv.file)];
+                case 0: return [4 /*yield*/, readFile('done.txt', { encoding: 'utf8' })];
                 case 1:
-                    sitesToScan = _c.sent();
-                    _c.label = 2;
+                    doneContents = _c.sent();
+                    doneList = doneContents.split('\n')
+                        .map(function (line) { return line.trim(); });
+                    return [4 /*yield*/, readFile('ignorelist.txt', { encoding: 'utf8' })];
                 case 2:
-                    _c.trys.push([2, 7, 8, 9]);
-                    sitesToScan_1 = __values(sitesToScan), sitesToScan_1_1 = sitesToScan_1.next();
-                    _c.label = 3;
+                    ignoreContents = _c.sent();
+                    ignoreList = ignoreContents.split('\n')
+                        .map(function (line) { return line.trim(); });
+                    db = new MySQLConnector_1.MySQLConnector();
+                    if (!(argv.file != null)) return [3 /*break*/, 12];
+                    return [4 /*yield*/, readUrlList(argv.file)];
                 case 3:
-                    if (!!sitesToScan_1_1.done) return [3 /*break*/, 6];
-                    urlToScan = sitesToScan_1_1.value;
-                    console.log("" + urlToScan);
-                    return [4 /*yield*/, crawlSite(urlToScan, db)];
+                    sitesToScan = _c.sent();
+                    _c.label = 4;
                 case 4:
-                    _c.sent();
+                    _c.trys.push([4, 9, 10, 11]);
+                    sitesToScan_1 = __values(sitesToScan), sitesToScan_1_1 = sitesToScan_1.next();
                     _c.label = 5;
                 case 5:
-                    sitesToScan_1_1 = sitesToScan_1.next();
-                    return [3 /*break*/, 3];
-                case 6: return [3 /*break*/, 9];
+                    if (!!sitesToScan_1_1.done) return [3 /*break*/, 8];
+                    urlToScan = sitesToScan_1_1.value;
+                    if (doneList.indexOf(urlToScan) > -1) {
+                        console.log("Already crawled " + urlToScan + ". Skipping.");
+                        return [3 /*break*/, 7];
+                    }
+                    if (ignoreList.indexOf(urlToScan) > -1) {
+                        console.log("Ignoring " + urlToScan + ".");
+                        return [3 /*break*/, 7];
+                    }
+                    console.log("" + urlToScan);
+                    return [4 /*yield*/, crawlSite(urlToScan, db)];
+                case 6:
+                    _c.sent();
+                    length_1 = doneList.push(urlToScan);
+                    appendFile('done.txt', "\n" + urlToScan);
+                    _c.label = 7;
                 case 7:
+                    sitesToScan_1_1 = sitesToScan_1.next();
+                    return [3 /*break*/, 5];
+                case 8: return [3 /*break*/, 11];
+                case 9:
                     e_2_1 = _c.sent();
                     e_2 = { error: e_2_1 };
-                    return [3 /*break*/, 9];
-                case 8:
+                    return [3 /*break*/, 11];
+                case 10:
                     try {
                         if (sitesToScan_1_1 && !sitesToScan_1_1.done && (_b = sitesToScan_1.return)) _b.call(sitesToScan_1);
                     }
                     finally { if (e_2) throw e_2.error; }
                     return [7 /*endfinally*/];
-                case 9:
-                    db.close();
-                    return [3 /*break*/, 12];
-                case 10:
-                    if (!(argv.url != null || URL_TO_SCAN != null)) return [3 /*break*/, 12];
-                    urlToScan = (_a = URL_TO_SCAN !== null && URL_TO_SCAN !== void 0 ? URL_TO_SCAN : argv.url) !== null && _a !== void 0 ? _a : '';
-                    if (!(urlToScan !== '')) return [3 /*break*/, 12];
-                    return [4 /*yield*/, crawlSite(urlToScan, db)];
                 case 11:
+                    db.close();
+                    return [3 /*break*/, 14];
+                case 12:
+                    if (!(argv.url != null || URL_TO_SCAN != null)) return [3 /*break*/, 14];
+                    urlToScan = (_a = URL_TO_SCAN !== null && URL_TO_SCAN !== void 0 ? URL_TO_SCAN : argv.url) !== null && _a !== void 0 ? _a : '';
+                    if (!(urlToScan !== '')) return [3 /*break*/, 14];
+                    return [4 /*yield*/, crawlSite(urlToScan, db)];
+                case 13:
                     _c.sent();
                     db.close();
-                    _c.label = 12;
-                case 12: return [2 /*return*/];
+                    _c.label = 14;
+                case 14: return [2 /*return*/];
             }
         });
     });
