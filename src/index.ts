@@ -83,6 +83,7 @@ async function main() {
                 console.log(`Ignoring ${urlToScan}.`);
                 continue;
             }
+            appendFile('attempt.txt', `\n${urlToScan}`);
             console.log(`${urlToScan}`);
             await crawlSite(urlToScan, db);
             let length = doneList.push(urlToScan);
