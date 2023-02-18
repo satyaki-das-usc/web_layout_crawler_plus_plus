@@ -39,7 +39,7 @@ async function readUrlList(filepath: string) {
 }
 
 async function waitFor(seconds: number){
-    return new Promise((resolve) => {
+    return new Promise<void>((resolve) => {
         setTimeout(() => {
             resolve();
         }, seconds)
@@ -71,7 +71,10 @@ async function main() {
     const db = new MySQLConnector();
     if(argv.file != null ){
         const sitesToScan = await readUrlList(argv.file);
-        for(const urlToScan of sitesToScan){
+        //var slicedFromBottom = sitesToScan.slice(-100);
+        var slicedFromBottom = sitesToScan.slice(6000,6324);
+        //console.log(sliced);
+        for(const urlToScan of slicedFromBottom){
             if(doneList.indexOf(urlToScan) > -1) {
                 console.log(`Already crawled ${urlToScan}. Skipping.`);
                 continue;

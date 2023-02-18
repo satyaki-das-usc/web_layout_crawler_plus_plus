@@ -8,6 +8,8 @@ import {
     exists as _exists,
     writeFileSync
 } from 'fs';
+import fs from 'fs';
+import util from 'util';
 import mv from 'mv';
 import {makeChromeProfile, makeFirefoxProfileWithWebAssemblyDisabled, makeFirefoxProfileWithWebAssemblyEnabled} from './CommonUtilities';
 import {
@@ -47,6 +49,8 @@ import {
 } from './config.json';
 import { type } from 'os';
 import chalk from 'chalk';
+
+const appendFile = util.promisify(fs.appendFile);
 
 enum SubURLScanMode {
     FULL = 'full',
@@ -211,7 +215,7 @@ export class Crawler {
     }
 
     moveFile(currentPath: string, newPath: string) {
-        return new Promise((resolve, reject) => {
+        return new Promise<void>((resolve, reject) => {
             mv(currentPath, newPath, {
                 clobber: true
             }, function (err) {
@@ -850,7 +854,9 @@ export class Crawler {
                 await this.closePage(page);
             } catch (err) {
                 clearTimeout(timeout);
-                reject(err)
+                reject(err); 
+                
+                console.log('erdddddddr');
                 return;
             }
 
@@ -859,7 +865,7 @@ export class Crawler {
     }
 
     async closePage(page: playwright.Page){
-        return new Promise( (resolve, reject) => {
+        return new Promise<void>( (resolve, reject) => {
 
             let closeTimeout = setTimeout(async () => {
                 await this.closeBrowser();
@@ -994,7 +1000,7 @@ export class Crawler {
     }
 
     wait(seconds: number) {
-        return new Promise((resolve, reject) => {
+        return new Promise<void>((resolve, reject) => {
             setTimeout(() => {
                 resolve();
             }, seconds * 1000)
