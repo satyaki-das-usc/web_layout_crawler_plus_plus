@@ -72,9 +72,9 @@ async function main() {
     if(argv.file != null ){
         const sitesToScan = await readUrlList(argv.file);
         //var slicedFromBottom = sitesToScan.slice(-100);
-        var slicedFromBottom = sitesToScan.slice(6000,6324);
+        //var slicedFromBottom = sitesToScan.slice(6000,6324);
         //console.log(sliced);
-        for(const urlToScan of slicedFromBottom){
+        for(const urlToScan of sitesToScan){
             if(doneList.indexOf(urlToScan) > -1) {
                 console.log(`Already crawled ${urlToScan}. Skipping.`);
                 continue;
