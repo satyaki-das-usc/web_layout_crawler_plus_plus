@@ -5,8 +5,8 @@ import pandas as pd
 import numpy as np
 import glob, cv2, os
 
-root = "../Screenshots/"
-report_dir = "../Reports/"
+root = "Screenshots/"
+report_dir = "Reports/"
 browsers = ['Chrome','Firefox']
 condition = ["WebAssembly_Enabled","WebAssembly_Disabled"]
 suffix = ["En", "Dis"]
@@ -32,14 +32,18 @@ def read_img_and_hist():
     for url in urls:
         images[url] = {}
         hists[url] = {}
+        url_deleted = False
         for b in browsers:
+            if url_deleted:
+                break
             for i in range(0,len(condition)):
                 try:
                     # urls that don't have .wasm, thus no WebAssembly_Disabled directory
-                    if i == 1 and (not os.path.exists(root+url+"/"+b+"/"+condition[i])):
-                        images[url][b+suffix[i]] = None
-                        hists[url][b+suffix[i]] = None
-                        continue
+                    if (not os.path.exists(url+b+"/"+condition[i])):
+                        images.pop(url)
+                        hists.pop(url)
+                        url_deleted = True
+                        break
                     img = cv2.imread(url+b+"/"+condition[i]+"/screenshot.jpeg")
                     images[url][b+suffix[i]] = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
                     hist = cv2.calcHist([img], [0, 1, 2], None, [hist_bin, hist_bin, hist_bin], [0, 256, 0, 256, 0, 256])
@@ -129,6 +133,8 @@ if __name__ == "__main__":
 
     # Calculate CHI-square Distance and SSIM similarity pairwise
     for url in urls:
+        if url not in hists or url not in images:
+            continue
         new_row = [url]
         for i in range(1,len(col_names)):
             [method, index1, index2] = col_names[i].split("_")
