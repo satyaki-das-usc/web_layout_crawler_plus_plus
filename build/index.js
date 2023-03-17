@@ -189,6 +189,7 @@ function main() {
                         console.log("Ignoring " + urlToScan + ".");
                         return [3 /*break*/, 7];
                     }
+                    appendFile('attempt.txt', "\n" + urlToScan);
                     console.log("" + urlToScan);
                     return [4 /*yield*/, crawlSite(urlToScan, db)];
                 case 6:
