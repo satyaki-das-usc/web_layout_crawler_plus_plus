@@ -211,7 +211,7 @@ export class Crawler {
     }
 
     moveFile(currentPath: string, newPath: string) {
-        return new Promise((resolve, reject) => {
+        return new Promise<void>((resolve, reject) => {
             mv(currentPath, newPath, {
                 clobber: true
             }, function (err) {
@@ -859,7 +859,7 @@ export class Crawler {
     }
 
     async closePage(page: playwright.Page){
-        return new Promise( (resolve, reject) => {
+        return new Promise<void>( (resolve, reject) => {
 
             let closeTimeout = setTimeout(async () => {
                 await this.closeBrowser();
@@ -994,7 +994,7 @@ export class Crawler {
     }
 
     wait(seconds: number) {
-        return new Promise((resolve, reject) => {
+        return new Promise<void>((resolve, reject) => {
             setTimeout(() => {
                 resolve();
             }, seconds * 1000)
