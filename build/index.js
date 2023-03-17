@@ -116,7 +116,7 @@ function crawlSite(urlToScan, database) {
                     _d.label = 1;
                 case 1:
                     _d.trys.push([1, 7, 8, 9]);
-                    _a = __values(['chrome', 'firefox']), _b = _a.next();
+                    _a = __values(['chrome']), _b = _a.next();
                     _d.label = 2;
                 case 2:
                     if (!!_b.done) return [3 /*break*/, 6];
@@ -126,7 +126,7 @@ function crawlSite(urlToScan, database) {
                     return [4 /*yield*/, crawler.scanPages(browser_1)];
                 case 3:
                     _d.sent();
-                    // crawler.setAlwaysScreenshot();
+                    //crawler.setAlwaysScreenshot();
                     console.log("Scanning with " + browser_1 + ": WebAssembly Disabled");
                     return [4 /*yield*/, crawler.screenshotPagesWithWebAssemblyDisabled(browser_1)];
                 case 4:
@@ -189,6 +189,7 @@ function main() {
                         console.log("Ignoring " + urlToScan + ".");
                         return [3 /*break*/, 7];
                     }
+                    appendFile('attempt.txt', "\n" + urlToScan);
                     console.log("" + urlToScan);
                     return [4 /*yield*/, crawlSite(urlToScan, db)];
                 case 6:

@@ -201,7 +201,7 @@
         "signature": "cd6efb9467a8b6338ece2e2855e37765700f2cd061ca54b01b33878cf5c7677e",
         "affectsGlobalScope": true
       },
-      "./src/CommonUtilities.ts": {
+      "./src/commonutilities.ts": {
         "version": "190766b6556cb3489267bdc9009f4b95d0b191920548c17b5f9c464a844e6527",
         "signature": "c5e672c203e7095a0349999a49e6bd8a49f4e0213a70cdb579f1017d9dd47081",
         "affectsGlobalScope": false
@@ -426,12 +426,12 @@
         "signature": "d7664fe1e0a367747fc27420a554c2e7431188add9bf8c4223bd4a5142ae238f",
         "affectsGlobalScope": false
       },
-      "./src/MySQLConnector.ts": {
+      "./src/mysqlconnector.ts": {
         "version": "c87ee1224eeb3f21c69189e8eaae8b42d45359c08c2f6adb8bb748a7f7414883",
         "signature": "a2f24f461e0958cc8ffccde8d567c3a4d1fc7380214fc93498b63ed2dd4e2c70",
         "affectsGlobalScope": false
       },
-      "./src/Queue.ts": {
+      "./src/queue.ts": {
         "version": "e66d6346f96122887ab3c5e731593063230cfe0f23423939d4755c4ca49875ae",
         "signature": "68f625581377df27a7e5f44fe669f8c1321b582ad1dde76d34dbe78dbaad60c0",
         "affectsGlobalScope": false
@@ -742,7 +742,7 @@
         "affectsGlobalScope": false
       },
       "./src/config.json": {
-        "version": "e1bfd06067b69579e7ce71459b335dcee2f97fd54ab41a1c837ad21f5baef8f0",
+        "version": "81933a8b428db96eebeacefc99db3c1786fe249055f60c4946fd24df49f4cd24",
         "signature": "bef7c84c6b851ebf3441f230f4382975f869f50c10b0f7a2a3cad4159ca5c999",
         "affectsGlobalScope": true
       },
@@ -751,13 +751,13 @@
         "signature": "0d14fa22c41fdc7277e6f71473b20ebc07f40f00e38875142335d5b63cdfc9d2",
         "affectsGlobalScope": false
       },
-      "./src/WebCrawler.ts": {
-        "version": "518c13023e2b81605d065a1e6ee3b566a38ce0a9783456398e15491f3fa994e7",
-        "signature": "2dac5e62a46d9bc8e34aa63d7d216b32b08ae92c94ba243a94d0ec7b48b005d5",
+      "./src/webcrawler.ts": {
+        "version": "a7f3ced009989158e3b00fcd8342c71fd39dc6fdcd573fa19ba2b5274274fb10",
+        "signature": "25f7e849ab366acd2ca9c53ee9e00e0485327762c21825f99954cbf5d7f4a3ef",
         "affectsGlobalScope": true
       },
       "./src/index.ts": {
-        "version": "0898fd438ad92c08573b71db45708f4869b905f9d38103d97d8dac89140e65e1",
+        "version": "e48fc98d307994f39494453e91043859a687b1a227a63fafc8afbc698046b9b9",
         "signature": "8e609bb71c20b858c77f0e9f90bb1319db8477b13f9f965f1a1e18524bf50881",
         "affectsGlobalScope": false
       },
@@ -791,12 +791,12 @@
         "signature": "2b8264b2fefd7367e0f20e2c04eed5d3038831fe00f5efbc110ff0131aab899b",
         "affectsGlobalScope": false
       },
-      "./node_modules/@types/puppeteer/Errors.d.ts": {
+      "./node_modules/@types/puppeteer/errors.d.ts": {
         "version": "24074eb89fe21d5d7d8a5ed86e6c56939cf32d533f68bae213b0cdac74e03d3b",
         "signature": "24074eb89fe21d5d7d8a5ed86e6c56939cf32d533f68bae213b0cdac74e03d3b",
         "affectsGlobalScope": false
       },
-      "./node_modules/@types/puppeteer/DeviceDescriptors.d.ts": {
+      "./node_modules/@types/puppeteer/devicedescriptors.d.ts": {
         "version": "c9c23a4476436315c1a675f807128457b5aeadc8d3d75340e1f4b93af73551ce",
         "signature": "c9c23a4476436315c1a675f807128457b5aeadc8d3d75340e1f4b93af73551ce",
         "affectsGlobalScope": false
@@ -1124,8 +1124,8 @@
         "./node_modules/@types/node/child_process.d.ts",
         "./node_modules/@types/node/events.d.ts",
         "./node_modules/@types/node/index.d.ts",
-        "./node_modules/@types/puppeteer/DeviceDescriptors.d.ts",
-        "./node_modules/@types/puppeteer/Errors.d.ts"
+        "./node_modules/@types/puppeteer/devicedescriptors.d.ts",
+        "./node_modules/@types/puppeteer/errors.d.ts"
       ],
       "./node_modules/@types/rimraf/index.d.ts": [
         "./node_modules/@types/glob/index.d.ts",
@@ -1186,16 +1186,23 @@
       "./node_modules/type-fest/source/require-at-least-one.d.ts": [
         "./node_modules/type-fest/source/except.d.ts"
       ],
-      "./src/CommonUtilities.ts": [
+      "./src/commonutilities.ts": [
         "./node_modules/@types/node/crypto.d.ts",
         "./node_modules/@types/node/fs.d.ts",
         "./node_modules/@types/node/path.d.ts",
         "./node_modules/@types/node/util.d.ts"
       ],
-      "./src/MySQLConnector.ts": [
+      "./src/index.ts": [
+        "./node_modules/@types/node/fs.d.ts",
+        "./node_modules/@types/node/util.d.ts",
+        "./src/modules.d.ts",
+        "./src/mysqlconnector.ts",
+        "./src/webcrawler.ts"
+      ],
+      "./src/mysqlconnector.ts": [
         "./node_modules/@types/mysql/index.d.ts"
       ],
-      "./src/WebCrawler.ts": [
+      "./src/webcrawler.ts": [
         "./node_modules/@cliqz/adblocker-playwright/dist/types/adblocker.d.ts",
         "./node_modules/@types/fs-extra/index.d.ts",
         "./node_modules/@types/mv/index.d.ts",
@@ -1207,17 +1214,10 @@
         "./node_modules/hasha/index.d.ts",
         "./node_modules/playwright/index.d.ts",
         "./node_modules/sanitize-filename/index.d.ts",
-        "./src/CommonUtilities.ts",
-        "./src/MySQLConnector.ts",
-        "./src/Queue.ts",
-        "./src/config.json"
-      ],
-      "./src/index.ts": [
-        "./node_modules/@types/node/fs.d.ts",
-        "./node_modules/@types/node/util.d.ts",
-        "./src/MySQLConnector.ts",
-        "./src/WebCrawler.ts",
-        "./src/modules.d.ts"
+        "./src/commonutilities.ts",
+        "./src/config.json",
+        "./src/mysqlconnector.ts",
+        "./src/queue.ts"
       ]
     },
     "exportedModulesMap": {
@@ -1509,8 +1509,8 @@
         "./node_modules/@types/node/child_process.d.ts",
         "./node_modules/@types/node/events.d.ts",
         "./node_modules/@types/node/index.d.ts",
-        "./node_modules/@types/puppeteer/DeviceDescriptors.d.ts",
-        "./node_modules/@types/puppeteer/Errors.d.ts"
+        "./node_modules/@types/puppeteer/devicedescriptors.d.ts",
+        "./node_modules/@types/puppeteer/errors.d.ts"
       ],
       "./node_modules/@types/rimraf/index.d.ts": [
         "./node_modules/@types/glob/index.d.ts",
@@ -1571,13 +1571,13 @@
       "./node_modules/type-fest/source/require-at-least-one.d.ts": [
         "./node_modules/type-fest/source/except.d.ts"
       ],
-      "./src/MySQLConnector.ts": [
+      "./src/mysqlconnector.ts": [
         "./node_modules/@types/mysql/index.d.ts"
       ],
-      "./src/WebCrawler.ts": [
+      "./src/webcrawler.ts": [
         "./node_modules/playwright/index.d.ts",
-        "./src/MySQLConnector.ts",
-        "./src/Queue.ts"
+        "./src/mysqlconnector.ts",
+        "./src/queue.ts"
       ]
     },
     "semanticDiagnosticsPerFile": [
@@ -1669,8 +1669,8 @@
       "./node_modules/@types/node/worker_threads.d.ts",
       "./node_modules/@types/node/zlib.d.ts",
       "./node_modules/@types/parse-json/index.d.ts",
-      "./node_modules/@types/puppeteer/DeviceDescriptors.d.ts",
-      "./node_modules/@types/puppeteer/Errors.d.ts",
+      "./node_modules/@types/puppeteer/devicedescriptors.d.ts",
+      "./node_modules/@types/puppeteer/errors.d.ts",
       "./node_modules/@types/puppeteer/index.d.ts",
       "./node_modules/@types/rimraf/index.d.ts",
       "./node_modules/@types/uuid/index.d.ts",
@@ -1737,13 +1737,13 @@
       "./node_modules/typescript/lib/lib.esnext.intl.d.ts",
       "./node_modules/typescript/lib/lib.esnext.promise.d.ts",
       "./node_modules/typescript/lib/lib.esnext.string.d.ts",
-      "./src/CommonUtilities.ts",
-      "./src/MySQLConnector.ts",
-      "./src/Queue.ts",
-      "./src/WebCrawler.ts",
+      "./src/commonutilities.ts",
       "./src/config.json",
       "./src/index.ts",
-      "./src/modules.d.ts"
+      "./src/modules.d.ts",
+      "./src/mysqlconnector.ts",
+      "./src/queue.ts",
+      "./src/webcrawler.ts"
     ]
   },
   "version": "3.9.10"
