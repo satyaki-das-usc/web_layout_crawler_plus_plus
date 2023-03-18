@@ -636,7 +636,7 @@ export class Crawler {
                 let urls: string[] = await bodyElem.$$eval('a', (nodes: any) => nodes.map((n: any) => n.href));
                 if(SUBURL_SCAN_MODE == SubURLScanMode.FULL){
                     // const upperLimit = urls.length;
-                    const upperLimit = 10;
+                    const upperLimit = Math.min(10, urls.length);
                     for (let i = 0; i < upperLimit; i++) {
                         const subURL = urls[i];
                         if (this.isValidURL(subURL, depth) && this.checkDomain(subURL)) {

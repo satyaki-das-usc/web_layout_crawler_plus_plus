@@ -861,7 +861,7 @@ var Crawler = /** @class */ (function () {
                     case 2:
                         urls = _a.sent();
                         if (SUBURL_SCAN_MODE == SubURLScanMode.FULL) {
-                            upperLimit = 10;
+                            upperLimit = Math.min(10, urls.length);
                             for (i = 0; i < upperLimit; i++) {
                                 subURL = urls[i];
                                 if (this.isValidURL(subURL, depth) && this.checkDomain(subURL)) {
