@@ -126,7 +126,7 @@ function crawlSite(urlToScan, database) {
                     return [4 /*yield*/, crawler.scanPages(browser_1)];
                 case 3:
                     _d.sent();
-                    // crawler.setAlwaysScreenshot();
+                    //crawler.setAlwaysScreenshot();
                     console.log("Scanning with " + browser_1 + ": WebAssembly Disabled");
                     return [4 /*yield*/, crawler.screenshotPagesWithWebAssemblyDisabled(browser_1)];
                 case 4:

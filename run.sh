@@ -1,5 +1,5 @@
 #!/bin/bash
 
-PYTHONPATH="." python recurrent_run.py --file $1
+PYTHONPATH="." python3 recurrent_run.py --file $1
 
-PYTHONPATH="." python scripts/ScreenshotAnalysis.py
+PYTHONPATH="." python3 scripts/ScreenshotAnalysis.py

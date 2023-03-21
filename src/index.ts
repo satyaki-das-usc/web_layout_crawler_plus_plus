@@ -39,7 +39,7 @@ async function readUrlList(filepath: string) {
 }
 
 async function waitFor(seconds: number){
-    return new Promise((resolve) => {
+    return new Promise<void>((resolve) => {
         setTimeout(() => {
             resolve();
         }, seconds)
@@ -51,11 +51,12 @@ async function crawlSite(urlToScan: string, database: MySQLConnector){
     if (!pageURL.includes('http://') && !pageURL.includes('https://')) {
         pageURL = "http://" + pageURL;
     }
-    for(const browser of ['chrome','firefox']){
+    // for(const browser of ['chrome','firefox']){
+     for(const browser of ['chrome','firefox']){
         const crawler = new Crawler(database, pageURL, argv);
         console.log(`Scanning with ${browser}: WebAssembly Enabled`)
         await crawler.scanPages(browser);
-        // crawler.setAlwaysScreenshot();
+         //crawler.setAlwaysScreenshot();
         console.log(`Scanning with ${browser}: WebAssembly Disabled`)
         await crawler.screenshotPagesWithWebAssemblyDisabled(browser);
     }
@@ -71,6 +72,9 @@ async function main() {
     const db = new MySQLConnector();
     if(argv.file != null ){
         const sitesToScan = await readUrlList(argv.file);
+        //var slicedFromBottom = sitesToScan.slice(-100);
+        //var slicedFromBottom = sitesToScan.slice(6000,6324);
+        //console.log(sliced);
         for(const urlToScan of sitesToScan){
             if(doneList.indexOf(urlToScan) > -1) {
                 console.log(`Already crawled ${urlToScan}. Skipping.`);
