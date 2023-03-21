@@ -94,33 +94,33 @@ WebAssembly.instantiate = function (arrayBuffer, imp) {
             self.WebAssemblyCallsFound.addWasmFileReference(wasmHashString);
             self.WebAssemblyCallsFound.WasmFiles[wasmHashString].addInstantiate(stackLocation);
             //Instrument the Imported JavaScript functions
-            /*for (const key in imp) {
-                newImports[key] = {}
-                const keyObject = imp[key];
-                if (keyObject != null && keyObject.toString() === "[object Math]") {
-                    newImports[key] = keyObject;
-                }
-                for (const name in keyObject) {
-                    if (typeof (keyObject[name]) === 'function') {
-                        const originalImportFunction = keyObject[name];
-                        newImports[key][name] = (function () {
-                            const na = name;
-                            const wasmHashStr = wasmHashString;
-                            return function () {
-                                let frames = new Error().stack;
-                                self.WebAssemblyCallsFound.WasmFiles[wasmHashStr].addImport(na, frames)
-                                return originalImportFunction.apply(null, arguments);
-                            };
-                        })()
-                    } else {
-                        newImports[key][name] = keyObject[name];
-                    }
-                }
-            }*/
+            // for (const key in imp) {
+            //     newImports[key] = {}
+            //     const keyObject = imp[key];
+            //     if (keyObject != null && keyObject.toString() === "[object Math]") {
+            //         newImports[key] = keyObject;
+            //     }
+            //     for (const name in keyObject) {
+            //         if (typeof (keyObject[name]) === 'function') {
+            //             const originalImportFunction = keyObject[name];
+            //             newImports[key][name] = (function () {
+            //                 const na = name;
+            //                 const wasmHashStr = wasmHashString;
+            //                 return function () {
+            //                     let frames = new Error().stack;
+            //                     self.WebAssemblyCallsFound.WasmFiles[wasmHashStr].addImport(na, frames)
+            //                     return originalImportFunction.apply(null, arguments);
+            //                 };
+            //             })()
+            //         } else {
+            //             newImports[key][name] = keyObject[name];
+            //         }
+            //     }
+            // }
             //Call the original .instantiate function to get the Result Object 
             return __ogWaI(arrayBuffer, newImports)
                 .then(function (re) {
-                    return re;
+                    // return re;
                     //Depending on whether * buff * param was bytes or a Module,
                     //return of .instantiate can be either the Instance or a ResultObject
                     //containing a Module and Instance
