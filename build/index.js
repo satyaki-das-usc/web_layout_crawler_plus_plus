@@ -116,7 +116,7 @@ function crawlSite(urlToScan, database) {
                     _d.label = 1;
                 case 1:
                     _d.trys.push([1, 7, 8, 9]);
-                    _a = __values(['chrome']), _b = _a.next();
+                    _a = __values(['chrome', 'firefox']), _b = _a.next();
                     _d.label = 2;
                 case 2:
                     if (!!_b.done) return [3 /*break*/, 6];

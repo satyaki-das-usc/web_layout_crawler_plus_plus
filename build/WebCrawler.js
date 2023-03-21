@@ -53,14 +53,16 @@ var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Crawler = void 0;
 var fs_1 = require("fs");
+var fs_2 = __importDefault(require("fs"));
+var util_1 = __importDefault(require("util"));
 var mv_1 = __importDefault(require("mv"));
 var CommonUtilities_1 = require("./CommonUtilities");
-var util_1 = require("util");
-var readdir = util_1.promisify(fs_1.readdir);
-var mkdir = util_1.promisify(fs_1.mkdir);
-var stat = util_1.promisify(fs_1.stat);
-var rmdir = util_1.promisify(fs_1.rmdir);
-var exists = util_1.promisify(fs_1.exists);
+var util_2 = require("util");
+var readdir = util_2.promisify(fs_1.readdir);
+var mkdir = util_2.promisify(fs_1.mkdir);
+var stat = util_2.promisify(fs_1.stat);
+var rmdir = util_2.promisify(fs_1.rmdir);
+var exists = util_2.promisify(fs_1.exists);
 var URL = require('url').URL;
 var fs_extra_1 = __importDefault(require("fs-extra")); // v 5.0.0
 var sanitize_filename_1 = __importDefault(require("sanitize-filename"));
@@ -73,12 +75,14 @@ var adblocker_playwright_1 = require("@cliqz/adblocker-playwright");
 var uuidv1 = require('uuidv1');
 var config_json_1 = require("./config.json");
 var chalk_1 = __importDefault(require("chalk"));
+var appendFile = util_1.default.promisify(fs_2.default.appendFile);
 var SubURLScanMode;
 (function (SubURLScanMode) {
     SubURLScanMode["FULL"] = "full";
     SubURLScanMode["RANDOM"] = "random";
     SubURLScanMode["FIRST_N_PERCENT"] = "first_n_percent";
 })(SubURLScanMode || (SubURLScanMode = {}));
+var ENABLE_BTN_CLICK = config_json_1.enable_button_click;
 var SUBPAGE_PERCENTAGE_TO_VISIT = (process.env.SUBPAGE_PERCENTAGE_TO_VISIT != null) ? parseFloat(process.env.SUBPAGE_PERCENTAGE_TO_VISIT) : 0.25;
 var MAX_CRAWL_DEPTH_LEVEL = (process.env.MAX__CRAWL_DEPTH_LEVEL != null) ? parseInt(process.env.MAX__CRAWL_DEPTH_LEVEL) : config_json_1.max_crawl_depth_level;
 var HEADLESS_BROWSER = false;
@@ -242,7 +246,7 @@ var Crawler = /** @class */ (function () {
                     case 0:
                         sqlParams = [];
                         capturedRequests = JSON.stringify(this.capturedRequests.get(currentURL));
-                        baseQuery = "\n            INSERT INTO found_page\n            (URL, Domain, StackTraceJSON, CapturedRequests,ParentPage) \n            VALUES(?,?,?,?,?);\n        ";
+                        baseQuery = "\n            INSERT INTO found_page\n            (URL, Domain, StackTraceJSON, CapturedRequests,ParentPage)\n            VALUES(?,?,?,?,?);\n        ";
                         sqlParams.push(currentURL, domain, JSON.stringify(stackJson), capturedRequests, parent !== null && parent !== void 0 ? parent : null);
                         _a.label = 1;
                     case 1:
@@ -723,8 +727,9 @@ var Crawler = /** @class */ (function () {
             });
         });
     };
-    Crawler.prototype.takeScreenshot = function (page) {
+    Crawler.prototype.takeScreenshot = function (page, btn_idx) {
         var _a, _b;
+        if (btn_idx === void 0) { btn_idx = -1; }
         return __awaiter(this, void 0, void 0, function () {
             var screenshotBuffer, imageType, screenshotError_1, fallbackScreenshotError_1, screenshotPath, parentDir;
             var _this = this;
@@ -781,20 +786,26 @@ var Crawler = /** @class */ (function () {
                     case 10: return [4 /*yield*/, this.checkVideoContainer(page, page.url())];
                     case 11:
                         _c.sent();
-                        if (!(screenshotBuffer != null && ((_a = this.currentJob) === null || _a === void 0 ? void 0 : _a.url))) return [3 /*break*/, 14];
+                        if (!(screenshotBuffer != null && ((_a = this.currentJob) === null || _a === void 0 ? void 0 : _a.url))) return [3 /*break*/, 16];
                         console.log(this.currentJob.url);
                         screenshotPath = this.sanitizeURLForFileSystem((_b = this.currentJob) === null || _b === void 0 ? void 0 : _b.url, this.screenshotOutputPath) + '.' + imageType;
                         parentDir = path_1.dirname(screenshotPath);
-                        return [4 /*yield*/, fs_extra_1.default.outputFile(parentDir + "/screenshot." + imageType, screenshotBuffer)];
+                        if (!(btn_idx > -1)) return [3 /*break*/, 13];
+                        parentDir = parentDir + "/button_" + btn_idx;
+                        return [4 /*yield*/, fs_extra_1.default.outputFile(parentDir + "_screenshot." + imageType, screenshotBuffer)];
                     case 12:
+                        _c.sent();
+                        return [3 /*break*/, 16];
+                    case 13: return [4 /*yield*/, fs_extra_1.default.outputFile(parentDir + "/screenshot." + imageType, screenshotBuffer)];
+                    case 14:
                         _c.sent();
                         //console.log(this.hasVideo);
                         return [4 /*yield*/, fs_extra_1.default.outputFile(parentDir + "/screenshot.txt", "" + this.hasVideo).then(function () { return (_this.hasVideo = false); })];
-                    case 13:
+                    case 15:
                         //console.log(this.hasVideo);
                         _c.sent();
-                        _c.label = 14;
-                    case 14: return [2 /*return*/];
+                        _c.label = 16;
+                    case 16: return [2 /*return*/];
                 }
             });
         });
@@ -844,6 +855,103 @@ var Crawler = /** @class */ (function () {
                 return subURL.startsWith(this.domain);
             }
         }
+    };
+    Crawler.prototype.handleButtonClick = function (pageURL) {
+        return __awaiter(this, void 0, void 0, function () {
+            var page, bodyElem, buttons, buttons_length, i, buttons_1;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.getPage()];
+                    case 1:
+                        page = _a.sent();
+                        if (page) {
+                            adblocker_playwright_1.PlaywrightBlocker.fromPrebuiltAdsAndTracking(fetch).then(function (blocker) {
+                                blocker.enableBlockingInPage(page);
+                            });
+                        }
+                        //Load the page first time to get the lenght of visible buttons
+                        return [4 /*yield*/, page.goto(pageURL, {
+                                waitUntil: 'load'
+                            })];
+                    case 2:
+                        //Load the page first time to get the lenght of visible buttons
+                        _a.sent();
+                        console.log("loading site inside button click");
+                        return [4 /*yield*/, page.waitForTimeout(TIME_TO_WAIT * 1000)];
+                    case 3:
+                        _a.sent();
+                        if (!(page != null && page.$ != undefined)) return [3 /*break*/, 18];
+                        return [4 /*yield*/, page.$('body')];
+                    case 4:
+                        bodyElem = _a.sent();
+                        if (!(bodyElem != null && bodyElem.$$eval != undefined)) return [3 /*break*/, 18];
+                        return [4 /*yield*/, page.$$('button:visible')];
+                    case 5:
+                        buttons = (_a.sent());
+                        buttons_length = buttons.length;
+                        //Click on the first button as this page is on initial state
+                        return [4 /*yield*/, buttons[0].click()];
+                    case 6:
+                        //Click on the first button as this page is on initial state
+                        _a.sent();
+                        return [4 /*yield*/, this.takeScreenshot(page, 0)];
+                    case 7:
+                        _a.sent();
+                        //Now that one button is clicked, the page structure may get changed
+                        //Close the page
+                        return [4 /*yield*/, this.closePage(page)];
+                    case 8:
+                        //Now that one button is clicked, the page structure may get changed
+                        //Close the page
+                        _a.sent();
+                        i = 1;
+                        _a.label = 9;
+                    case 9:
+                        if (!(i < buttons_length)) return [3 /*break*/, 18];
+                        return [4 /*yield*/, this.getPage()];
+                    case 10:
+                        //load the page each time to get back to the initial state
+                        page = _a.sent();
+                        if (page) {
+                            adblocker_playwright_1.PlaywrightBlocker.fromPrebuiltAdsAndTracking(fetch).then(function (blocker) {
+                                blocker.enableBlockingInPage(page);
+                            });
+                        }
+                        //Load the page again to get the initial states
+                        return [4 /*yield*/, page.goto(pageURL, {
+                                waitUntil: 'load'
+                            })];
+                    case 11:
+                        //Load the page again to get the initial states
+                        _a.sent();
+                        console.log("loading site inside button click");
+                        return [4 /*yield*/, page.waitForTimeout(TIME_TO_WAIT * 1000)];
+                    case 12:
+                        _a.sent();
+                        return [4 /*yield*/, page.$$('button:visible')];
+                    case 13:
+                        buttons_1 = (_a.sent());
+                        return [4 /*yield*/, buttons_1[i].click()];
+                    case 14:
+                        _a.sent();
+                        return [4 /*yield*/, this.takeScreenshot(page, i)];
+                    case 15:
+                        _a.sent();
+                        //Since after a button click event the page structure may get changed, 
+                        //close the page to restart afresh
+                        return [4 /*yield*/, this.closePage(page)];
+                    case 16:
+                        //Since after a button click event the page structure may get changed, 
+                        //close the page to restart afresh
+                        _a.sent();
+                        _a.label = 17;
+                    case 17:
+                        i++;
+                        return [3 /*break*/, 9];
+                    case 18: return [2 /*return*/];
+                }
+            });
+        });
     };
     Crawler.prototype.handleSubURLScan = function (page, currentJob) {
         return __awaiter(this, void 0, void 0, function () {
@@ -1099,7 +1207,7 @@ var Crawler = /** @class */ (function () {
                         }, (TIME_TO_WAIT * 5) * 1000);
                         _a.label = 5;
                     case 5:
-                        _a.trys.push([5, 23, , 24]);
+                        _a.trys.push([5, 25, , 26]);
                         this.hasVideo = false;
                         return [4 /*yield*/, page.goto(pageURL, {
                                 waitUntil: 'load'
@@ -1163,13 +1271,19 @@ var Crawler = /** @class */ (function () {
                     case 21: return [4 /*yield*/, this.closePage(page)];
                     case 22:
                         _a.sent();
-                        return [3 /*break*/, 24];
+                        if (!(this.containsWebAssembly && ENABLE_BTN_CLICK)) return [3 /*break*/, 24];
+                        return [4 /*yield*/, this.handleButtonClick(pageURL)];
                     case 23:
+                        _a.sent();
+                        _a.label = 24;
+                    case 24: return [3 /*break*/, 26];
+                    case 25:
                         err_2 = _a.sent();
                         clearTimeout(timeout);
                         reject(err_2);
+                        console.log('erdddddddr');
                         return [2 /*return*/];
-                    case 24:
+                    case 26:
                         resolve(crawlResults);
                         return [2 /*return*/];
                 }
@@ -1210,7 +1324,7 @@ var Crawler = /** @class */ (function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        _a.trys.push([0, 6, , 7]);
+                        _a.trys.push([0, 8, , 9]);
                         return [4 /*yield*/, this.getPage()];
                     case 1:
                         page = _a.sent();
@@ -1232,11 +1346,16 @@ var Crawler = /** @class */ (function () {
                         return [4 /*yield*/, this.closePage(page)];
                     case 5:
                         _a.sent();
-                        return [3 /*break*/, 7];
+                        if (!ENABLE_BTN_CLICK) return [3 /*break*/, 7];
+                        return [4 /*yield*/, this.handleButtonClick(url)];
                     case 6:
+                        _a.sent();
+                        _a.label = 7;
+                    case 7: return [3 /*break*/, 9];
+                    case 8:
                         browserErr_2 = _a.sent();
                         throw browserErr_2;
-                    case 7: return [2 /*return*/];
+                    case 9: return [2 /*return*/];
                 }
             });
         });
