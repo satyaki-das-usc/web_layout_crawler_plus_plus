@@ -413,10 +413,10 @@ export class Crawler {
         //     width: 600,//1920,
         //     height: 800//1080
         // });
-        await page.setViewportSize({
-            width: 640,
-            height: 480,
-        });
+        // await page.setViewportSize({
+        //     width: 640,
+        //     height: 480,
+        // });
 
         if (this.WebAssemblyEnabled) {
             page.on('worker', async worker => {
@@ -644,6 +644,7 @@ export class Crawler {
     }
 
     async handleButtonClick(pageURL: string) {
+        
         let page: Page = await this.getPage();
 
         if (page) {
@@ -655,51 +656,67 @@ export class Crawler {
         await page.goto(pageURL, {
             waitUntil: 'load'
         });
-        console.log("loading site inside button click");
+        
         await page.waitForTimeout(TIME_TO_WAIT * 1000);
+        await this.wait(20);
 
         if (page != null && page.$ != undefined) {
             let bodyElem = await page.$('body');
             if (bodyElem != null && bodyElem.$$eval != undefined) {
                 // Get all buttons an the length on that page
-                const buttons = (await page.$$('button:visible'));
-                const buttons_length = buttons.length;
+                const buttons_length = (await page.$$('button:visible')).length;
 
                 //Click on the first button as this page is on initial state
-                await buttons[0].click();
-                await this.takeScreenshot(page, 0);
+                //await buttons[0].click();
+                //await this.takeScreenshot(page, 0);
 
                 //Now that one button is clicked, the page structure may get changed
                 //Close the page
                 await this.closePage(page);
 
-                for (let i = 1; i < buttons_length; i++) {
-                    //load the page each time to get back to the initial state
-                    page = await this.getPage();
-
-                    if (page) {
-                        PlaywrightBlocker.fromPrebuiltAdsAndTracking(fetch).then((blocker) => {
-                            blocker.enableBlockingInPage(page);
+                for (let i = 0; i < buttons_length; i++) {
+                    try {
+                        //load the page each time to get back to the initial state
+                        page = await this.getPage();
+    
+                        if (page) {
+                            PlaywrightBlocker.fromPrebuiltAdsAndTracking(fetch).then((blocker) => {
+                                blocker.enableBlockingInPage(page);
+                            });
+                        }
+    
+                        //Load the page again to get the initial states
+                        await page.goto(pageURL, {
+                            waitUntil: 'load'
                         });
+    
+                        console.log("loading site inside button click");
+    
+                        await page.waitForTimeout(TIME_TO_WAIT * 1000);
+                        
+                        //Get the visible buttons, to click on the button instance
+                        let buttons = (await page.$$('button:visible'));
+                        let isAvailable  = false;
+                        while(!isAvailable){
+                            //await page.waitForTimeout(TIME_TO_WAIT * 1000);
+                            if(buttons && buttons.length > 0){
+                                isAvailable  = true;
+                            }
+                            else{
+                                this.wait(TIME_TO_WAIT);
+                                buttons = (await page.$$('button:visible'))
+                            }
+                        }
+                        let btn = buttons[i];
+                        await btn.click();
+                        await this.takeScreenshot(page, i);
+    
+                        //Since after a button click event the page structure may get changed, 
+                        //close the page to restart afresh
+                        //await this.closePage(page);
+                    } catch (error) {
+                        console.log("Err:",i, ":",error);
                     }
-
-                    //Load the page again to get the initial states
-                    await page.goto(pageURL, {
-                        waitUntil: 'load'
-                    });
-
-                    console.log("loading site inside button click");
-
-                    await page.waitForTimeout(TIME_TO_WAIT * 1000);
-                    
-                    //Get the visible buttons, to click on the button instance
-                    const buttons = (await page.$$('button:visible'));
-                    await buttons[i].click();
-                    await this.takeScreenshot(page, i);
-
-                    //Since after a button click event the page structure may get changed, 
-                    //close the page to restart afresh
-                    await this.closePage(page);
                 }
             }
         }
@@ -1037,6 +1054,7 @@ export class Crawler {
                         // } : undefined,
                         // devtools: true,
                         // dumpio: false,//!PROD,
+                        //viewport: {width: 1920, height: 1080 },
                         headless: HEADLESS_BROWSER
                         //viewport: { width: 1280, height: 720 }
                     }
@@ -1051,6 +1069,7 @@ export class Crawler {
                         // ignoreDefaultArgs: ['--disable-extensions'],
                         // devtools: true,
                         // dumpio: false,//!PROD,
+                        //viewport: {width: 1920, height: 1080} ,
                         headless: HEADLESS_BROWSER
                         //viewport: null
                     }
