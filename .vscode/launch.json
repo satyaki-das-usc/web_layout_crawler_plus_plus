@@ -5,6 +5,32 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Python: scripts/screenshot_stabilizer.py",
+            "type": "python",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "program": "scripts/screenshot_stabilizer.py",
+            "console": "externalTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "Python: scripts/ScreenshotAnalysis.py",
+            "type": "python",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "program": "scripts/ScreenshotAnalysis.py",
+            "console": "externalTerminal",
+            "justMyCode": true,
+            "args": ["-s", "Stabilized_Screenshots"]
+        },
+        {
+            "name": "Python: Attach using Process Id",
+            "type": "python",
+            "request": "attach",
+            "processId": "${command:pickProcess}",
+            "justMyCode": true
+        },
+        {
             "type": "node",
             "request": "launch",
             "name": "Launch Program",
