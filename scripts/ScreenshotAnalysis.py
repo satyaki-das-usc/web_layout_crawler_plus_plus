@@ -67,8 +67,9 @@ def search_urls(root):
 def read_img_and_hist():
     # Read the images and convert them to the histograms
     # Store in a dict with the url being the first-level key and browsername+condition being the second-level key
-    for url in urls:
-        logging.info(f"Reading image and histogram for {url}")
+    url_cnt = len(urls)
+    for idx, url in enumerate(urls):
+        logging.info(f"{idx + 1}/{url_cnt}: Reading image and histogram for {url}")
         images[url] = {}
         hists[url] = {}
         url_deleted = False
@@ -153,7 +154,14 @@ if __name__ == "__main__":
     report_dir = args.report_dir
     init_log(args.log_dir)
 
+    logging.info(f"Retrieving URLS")
     search_urls(root)
+
+    if len(urls) > 0:
+        logging.info(f"URLS retrieved successfully!")
+    else:
+        logging.error(f"Failed to retrieve URLS.")
+
     read_img_and_hist()
 
     # Generate Report in .csv
@@ -176,17 +184,18 @@ if __name__ == "__main__":
         os.makedirs((report_dir))
 
     # Calculate CHI-square Distance and SSIM similarity pairwise
-    for url in urls:
+    url_cnt = len(urls)
+    for idx, url in enumerate(urls):
         if url not in hists or url not in images:
             continue
-        logging.info(f"Calculating metrics for {url}")
+        logging.info(f"{idx + 1}/{url_cnt}: Calculating metrics for {url}")
         new_row = [url]
         for i in range(1,len(col_names)):
             [method, index1, index2] = col_names[i].split("_")
             if method == "chisqr":
                 new_row.append(chi_sqr_similarity(hists[url][index1],hists[url][index2]))
             elif method == "ssim":
-                new_row.append(structural_difference(images[url][index1],images[url][index2],url[15:],col_names[i]))
+                new_row.append(structural_difference(images[url][index1],images[url][index2],url,col_names[i]))
         report.loc[len(report.index)] = new_row
 
     # Output the report into a .csv
