@@ -1216,7 +1216,7 @@ var Crawler = /** @class */ (function () {
                         }, (TIME_TO_WAIT * 5) * 1000);
                         _a.label = 5;
                     case 5:
-                        _a.trys.push([5, 25, , 26]);
+                        _a.trys.push([5, 22, , 23]);
                         this.hasVideo = false;
                         return [4 /*yield*/, page.goto(pageURL, {
                                 waitUntil: 'load'
@@ -1224,29 +1224,26 @@ var Crawler = /** @class */ (function () {
                     case 6:
                         _a.sent();
                         console.log("loading");
-                        return [4 /*yield*/, page.waitForTimeout(TIME_TO_WAIT * 1000)];
+                        if (!this.currentJob) return [3 /*break*/, 10];
+                        _a.label = 7;
                     case 7:
-                        _a.sent();
-                        if (!this.currentJob) return [3 /*break*/, 11];
-                        _a.label = 8;
-                    case 8:
-                        _a.trys.push([8, , 10, 11]);
+                        _a.trys.push([7, , 9, 10]);
                         return [4 /*yield*/, this.handleSubURLScan(page, this.currentJob)];
-                    case 9:
+                    case 8:
                         _a.sent();
-                        return [3 /*break*/, 11];
-                    case 10: return [7 /*endfinally*/];
-                    case 11: return [4 /*yield*/, this.collectInstrumentationRecordsFromPage(page)];
-                    case 12:
+                        return [3 /*break*/, 10];
+                    case 9: return [7 /*endfinally*/];
+                    case 10: return [4 /*yield*/, this.collectInstrumentationRecordsFromPage(page)];
+                    case 11:
                         instrumentationRecords = _a.sent();
                         clearTimeout(timeout);
-                        if (!this.alwaysScreenshot) return [3 /*break*/, 14];
+                        if (!this.alwaysScreenshot) return [3 /*break*/, 13];
                         return [4 /*yield*/, this.takeScreenshot(page)];
-                    case 13:
+                    case 12:
                         _a.sent();
-                        _a.label = 14;
-                    case 14:
-                        if (!instrumentationRecords.altered) return [3 /*break*/, 21];
+                        _a.label = 13;
+                    case 13:
+                        if (!instrumentationRecords.altered) return [3 /*break*/, 18];
                         console.log('*'.repeat(10) + " Found a WebAssembly module! " + '*'.repeat(10));
                         requestsForPage = this.capturedRequests.get(pageURL);
                         crawlResults = {
@@ -1258,41 +1255,39 @@ var Crawler = /** @class */ (function () {
                         };
                         this.containsWebAssembly = true;
                         this.pagesWithWebAssembly.add(pageURL);
-                        _a.label = 15;
-                    case 15:
-                        _a.trys.push([15, 20, , 21]);
-                        if (!!this.alwaysScreenshot) return [3 /*break*/, 17];
+                        _a.label = 14;
+                    case 14:
+                        _a.trys.push([14, 17, , 18]);
+                        if (!!this.alwaysScreenshot) return [3 /*break*/, 16];
                         return [4 /*yield*/, this.takeScreenshot(page)];
+                    case 15:
+                        _a.sent();
+                        _a.label = 16;
                     case 16:
-                        _a.sent();
-                        _a.label = 17;
+                        if (!this.insertedURLs.has(pageURL)) {
+                            // await this.insertInstantiateIntoDatabase(`${pageURL}`, this.domain, instrumentationRecords, currentJob.parent);
+                        }
+                        return [3 /*break*/, 18];
                     case 17:
-                        if (!!this.insertedURLs.has(pageURL)) return [3 /*break*/, 19];
-                        return [4 /*yield*/, this.insertInstantiateIntoDatabase("" + pageURL, this.domain, instrumentationRecords, currentJob.parent)];
-                    case 18:
-                        _a.sent();
-                        _a.label = 19;
-                    case 19: return [3 /*break*/, 21];
-                    case 20:
                         takeScreenshotError_1 = _a.sent();
                         console.log(takeScreenshotError_1);
-                        return [3 /*break*/, 21];
-                    case 21: return [4 /*yield*/, this.closePage(page)];
-                    case 22:
+                        return [3 /*break*/, 18];
+                    case 18: return [4 /*yield*/, this.closePage(page)];
+                    case 19:
                         _a.sent();
-                        if (!(this.containsWebAssembly && ENABLE_BTN_CLICK)) return [3 /*break*/, 24];
+                        if (!(this.containsWebAssembly && ENABLE_BTN_CLICK)) return [3 /*break*/, 21];
                         return [4 /*yield*/, this.handleButtonClick(pageURL)];
-                    case 23:
+                    case 20:
                         _a.sent();
-                        _a.label = 24;
-                    case 24: return [3 /*break*/, 26];
-                    case 25:
+                        _a.label = 21;
+                    case 21: return [3 /*break*/, 23];
+                    case 22:
                         err_2 = _a.sent();
                         clearTimeout(timeout);
                         reject(err_2);
                         console.log('erdddddddr');
                         return [2 /*return*/];
-                    case 26:
+                    case 23:
                         resolve(crawlResults);
                         return [2 /*return*/];
                 }
@@ -1333,7 +1328,7 @@ var Crawler = /** @class */ (function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        _a.trys.push([0, 8, , 9]);
+                        _a.trys.push([0, 7, , 8]);
                         return [4 /*yield*/, this.getPage()];
                     case 1:
                         page = _a.sent();
@@ -1343,28 +1338,27 @@ var Crawler = /** @class */ (function () {
                     case 2:
                         _a.sent();
                         // await this.scrollToBottom(page);
-                        return [4 /*yield*/, page.waitForTimeout(TIME_TO_WAIT * 1000)];
-                    case 3:
-                        // await this.scrollToBottom(page);
-                        _a.sent();
+                        //await page.waitForTimeout(TIME_TO_WAIT * 1000);
                         // await this.scrollToTop(page);
                         return [4 /*yield*/, this.takeScreenshot(page)];
-                    case 4:
+                    case 3:
+                        // await this.scrollToBottom(page);
+                        //await page.waitForTimeout(TIME_TO_WAIT * 1000);
                         // await this.scrollToTop(page);
                         _a.sent();
                         return [4 /*yield*/, this.closePage(page)];
+                    case 4:
+                        _a.sent();
+                        if (!ENABLE_BTN_CLICK) return [3 /*break*/, 6];
+                        return [4 /*yield*/, this.handleButtonClick(url)];
                     case 5:
                         _a.sent();
-                        if (!ENABLE_BTN_CLICK) return [3 /*break*/, 7];
-                        return [4 /*yield*/, this.handleButtonClick(url)];
-                    case 6:
-                        _a.sent();
-                        _a.label = 7;
-                    case 7: return [3 /*break*/, 9];
-                    case 8:
+                        _a.label = 6;
+                    case 6: return [3 /*break*/, 8];
+                    case 7:
                         browserErr_2 = _a.sent();
                         throw browserErr_2;
-                    case 9: return [2 /*return*/];
+                    case 8: return [2 /*return*/];
                 }
             });
         });
