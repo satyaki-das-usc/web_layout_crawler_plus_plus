@@ -481,16 +481,10 @@ var Crawler = /** @class */ (function () {
                         //     width: 600,//1920,
                         //     height: 800//1080
                         // });
-                        return [4 /*yield*/, page.setViewportSize({
-                                width: 640,
-                                height: 480,
-                            })];
-                    case 16:
                         // await page.setViewportSize({
-                        //     width: 600,//1920,
-                        //     height: 800//1080
+                        //     width: 640,
+                        //     height: 480,
                         // });
-                        _a.sent();
                         if (this.WebAssemblyEnabled) {
                             page.on('worker', function (worker) { return __awaiter(_this, void 0, void 0, function () {
                                 var currentWorkerWebAssembly, err_1;
@@ -858,7 +852,7 @@ var Crawler = /** @class */ (function () {
     };
     Crawler.prototype.handleButtonClick = function (pageURL) {
         return __awaiter(this, void 0, void 0, function () {
-            var page, bodyElem, buttons, buttons_length, i, buttons_1;
+            var page, bodyElem, buttons_length, i, buttons, isAvailable, btn, error_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4 /*yield*/, this.getPage()];
@@ -876,38 +870,40 @@ var Crawler = /** @class */ (function () {
                     case 2:
                         //Load the page first time to get the lenght of visible buttons
                         _a.sent();
-                        console.log("loading site inside button click");
                         return [4 /*yield*/, page.waitForTimeout(TIME_TO_WAIT * 1000)];
                     case 3:
                         _a.sent();
-                        if (!(page != null && page.$ != undefined)) return [3 /*break*/, 18];
-                        return [4 /*yield*/, page.$('body')];
+                        return [4 /*yield*/, this.wait(20)];
                     case 4:
-                        bodyElem = _a.sent();
-                        if (!(bodyElem != null && bodyElem.$$eval != undefined)) return [3 /*break*/, 18];
-                        return [4 /*yield*/, page.$$('button:visible')];
+                        _a.sent();
+                        if (!(page != null && page.$ != undefined)) return [3 /*break*/, 23];
+                        return [4 /*yield*/, page.$('body')];
                     case 5:
-                        buttons = (_a.sent());
-                        buttons_length = buttons.length;
-                        //Click on the first button as this page is on initial state
-                        return [4 /*yield*/, buttons[0].click()];
+                        bodyElem = _a.sent();
+                        if (!(bodyElem != null && bodyElem.$$eval != undefined)) return [3 /*break*/, 23];
+                        return [4 /*yield*/, page.$$('button:visible')];
                     case 6:
+                        buttons_length = (_a.sent()).length;
                         //Click on the first button as this page is on initial state
-                        _a.sent();
-                        return [4 /*yield*/, this.takeScreenshot(page, 0)];
-                    case 7:
-                        _a.sent();
+                        //await buttons[0].click();
+                        //await this.takeScreenshot(page, 0);
                         //Now that one button is clicked, the page structure may get changed
                         //Close the page
                         return [4 /*yield*/, this.closePage(page)];
-                    case 8:
+                    case 7:
+                        //Click on the first button as this page is on initial state
+                        //await buttons[0].click();
+                        //await this.takeScreenshot(page, 0);
                         //Now that one button is clicked, the page structure may get changed
                         //Close the page
                         _a.sent();
-                        i = 1;
+                        i = 0;
+                        _a.label = 8;
+                    case 8:
+                        if (!(i < buttons_length)) return [3 /*break*/, 23];
                         _a.label = 9;
                     case 9:
-                        if (!(i < buttons_length)) return [3 /*break*/, 18];
+                        _a.trys.push([9, 21, , 22]);
                         return [4 /*yield*/, this.getPage()];
                     case 10:
                         //load the page each time to get back to the initial state
@@ -930,25 +926,38 @@ var Crawler = /** @class */ (function () {
                         _a.sent();
                         return [4 /*yield*/, page.$$('button:visible')];
                     case 13:
-                        buttons_1 = (_a.sent());
-                        return [4 /*yield*/, buttons_1[i].click()];
+                        buttons = (_a.sent());
+                        isAvailable = false;
+                        _a.label = 14;
                     case 14:
+                        if (!!isAvailable) return [3 /*break*/, 18];
+                        if (!(buttons && buttons.length > 0)) return [3 /*break*/, 15];
+                        isAvailable = true;
+                        return [3 /*break*/, 17];
+                    case 15:
+                        this.wait(TIME_TO_WAIT);
+                        return [4 /*yield*/, page.$$('button:visible')];
+                    case 16:
+                        buttons = (_a.sent());
+                        _a.label = 17;
+                    case 17: return [3 /*break*/, 14];
+                    case 18:
+                        btn = buttons[i];
+                        return [4 /*yield*/, btn.click()];
+                    case 19:
                         _a.sent();
                         return [4 /*yield*/, this.takeScreenshot(page, i)];
-                    case 15:
+                    case 20:
                         _a.sent();
-                        //Since after a button click event the page structure may get changed, 
-                        //close the page to restart afresh
-                        return [4 /*yield*/, this.closePage(page)];
-                    case 16:
-                        //Since after a button click event the page structure may get changed, 
-                        //close the page to restart afresh
-                        _a.sent();
-                        _a.label = 17;
-                    case 17:
+                        return [3 /*break*/, 22];
+                    case 21:
+                        error_1 = _a.sent();
+                        console.log("Err:", i, ":", error_1);
+                        return [3 /*break*/, 22];
+                    case 22:
                         i++;
-                        return [3 /*break*/, 9];
-                    case 18: return [2 /*return*/];
+                        return [3 /*break*/, 8];
+                    case 23: return [2 /*return*/];
                 }
             });
         });
@@ -969,7 +978,7 @@ var Crawler = /** @class */ (function () {
                     case 2:
                         urls = _a.sent();
                         if (SUBURL_SCAN_MODE == SubURLScanMode.FULL) {
-                            upperLimit = urls.length;
+                            upperLimit = Math.min(10, urls.length);
                             for (i = 0; i < upperLimit; i++) {
                                 subURL = urls[i];
                                 if (this.isValidURL(subURL, depth) && this.checkDomain(subURL)) {
@@ -1465,6 +1474,7 @@ var Crawler = /** @class */ (function () {
                                 // } : undefined,
                                 // devtools: true,
                                 // dumpio: false,//!PROD,
+                                //viewport: {width: 1920, height: 1080 },
                                 headless: HEADLESS_BROWSER
                                 //viewport: { width: 1280, height: 720 }
                             })];
@@ -1480,6 +1490,7 @@ var Crawler = /** @class */ (function () {
                                 // ignoreDefaultArgs: ['--disable-extensions'],
                                 // devtools: true,
                                 // dumpio: false,//!PROD,
+                                //viewport: {width: 1920, height: 1080} ,
                                 headless: HEADLESS_BROWSER
                                 //viewport: null
                             })];

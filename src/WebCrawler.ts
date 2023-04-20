@@ -897,7 +897,7 @@ export class Crawler {
                     waitUntil: 'load'
                 });
                 console.log("loading");
-                await page.waitForTimeout(TIME_TO_WAIT * 1000);
+                //await page.waitForTimeout(TIME_TO_WAIT * 1000);
                 if (this.currentJob) {
                     try {
                         await this.handleSubURLScan(page, this.currentJob)
@@ -937,7 +937,7 @@ export class Crawler {
                         }
 
                         if (!this.insertedURLs.has(pageURL)) {
-                            await this.insertInstantiateIntoDatabase(`${pageURL}`, this.domain, instrumentationRecords, currentJob.parent);
+                           // await this.insertInstantiateIntoDatabase(`${pageURL}`, this.domain, instrumentationRecords, currentJob.parent);
                         }
 
                     } catch (takeScreenshotError) {
@@ -989,7 +989,7 @@ export class Crawler {
                 waitUntil: 'load'
             });
             // await this.scrollToBottom(page);
-            await page.waitForTimeout(TIME_TO_WAIT * 1000);
+            //await page.waitForTimeout(TIME_TO_WAIT * 1000);
             // await this.scrollToTop(page);
             await this.takeScreenshot(page);
 
